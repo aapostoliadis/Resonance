@@ -56,7 +56,17 @@ Choose built-in or named custom palettes, save listening presets, or compare the
 
 For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](edge-apple-bridge) in the same Edge profile as the Resonance and Apple Music tabs. Run Resonance on port **4387** or **4390**, reload both tabs, and leave one Apple Music tab open. Share that tab's audio from Resonance. The bridge reads the title, elapsed time, and duration and lets the deck seek when Apple Music exposes a seekable track. The integration was verified with an Apple Music preview.
 
-The platform packages are distributed separately from this source repository. The [platform installation and verification notes](docs/INSTALL.md) cover the portable Windows EXE, Apple Silicon and Intel Mac bundles, Android APK, and iPhone Xcode project. The iPhone build requires Xcode and device signing.
+## Download Resonance 2.5.0
+
+| Platform | Download |
+| --- | --- |
+| Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64.exe) |
+| macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon.zip) |
+| macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel.zip) |
+| Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android.apk) |
+| iPhone | [Xcode project ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-iPhone-Xcode.zip). Build and sign it in Xcode to install it on a device. |
+
+[Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.0) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
 
 ## Develop
 
