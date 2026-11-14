@@ -11,7 +11,3 @@ Creative and technical reference: [Coding a 3D Audio Visualizer with Three.js, G
 Original graphics source is in src/graphics.js. Runtime dependencies are bundled locally; no external library requests are required.
 
 The five additional forms are inspired by eight images supplied by the user in this chat, including waves.jpg, fractal.jpg, and the heatmann visualization sheets. They use original procedural formulas; no attached image files or image textures are redistributed.
-
-Version2.3 visual research: [Refik Anadol, Works](https://refikanadol.com/works/), with Unsupervised, Nature Dreams and Melting Memories informing broad directions in pigment flow, granular volumes and sculpted relief. New fields and particles are original procedural implementations. Research thumbnails are not part of the distributed app.
-
-Horizon uses the user-supplied Horizon 006 artwork. The optimized texture is stored in `src/horizon.webp` and embedded in the graphics bundle.
