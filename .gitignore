@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+*.p8
+*.p12
+*.keystore
+*.jks
+*.mobileprovision
+*.exe
+*.apk
+*.ipa
+*.zip
+.DS_Store

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090b0b"><title>Resonance · Music visualizer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23c5f58d' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="player.css"><script src="reactivity.js" defer></script><script src="graphics.bundle.js" defer></script><script src="app.js" defer></script><script src="apple-music.js" defer></script><script src="player.js" defer></script>
+</head>
+<body>
+<canvas id="visual" aria-label="Animated audio visualization"></canvas>
+<div class="vignette"></div>
+<header><a href="./" class="brand" aria-label="Resonance home"><span class="brand-symbol">◉</span> resonance<span class="version">/ 3D</span></a><div class="header-right"><span class="local">LOCAL AUDIO ENGINE</span><button id="listening" class="listen-entry">Listen ↗</button><button id="help" class="icon" aria-label="How to connect audio">?</button><button id="zoom-out" class="icon" type="button" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/></svg></button><button id="zoom-reset" class="zoom-value" type="button" aria-label="Reset zoom to 100%" title="Reset zoom (0)">100%</button><button id="zoom-in" class="icon" type="button" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/><path d="M8 6v4"/></svg></button><button id="framing-toggle" class="view-mode" type="button" aria-label="Fill viewport" aria-pressed="false">Fit</button><button id="fullscreen" class="icon" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></header>
+<main>
+  <section class="intro"><div class="eyebrow"><span class="dot"></span> MUSIC, MADE VISIBLE</div><h1>Find your<br><span class="headline-accent">frequency.</span></h1><p>A living canvas for whatever<br>you’re listening to.</p></section>
+  <div class="stage-label"><span id="mode-number">01</span><span id="mode-caption">ORBITAL FIELD</span><span class="hairline"></span><span>REAL-TIME GENERATIVE VISUALS</span></div>
+  <aside id="visual-settings" class="inspector" aria-label="Visual controls">
+    <div class="inspector-top">
+     <div class="panel-heading">THE VISUALS
+      <div class="sheet-actions"><button id="expand-settings" type="button" aria-expanded="false">Expand</button><button id="close-settings" type="button">Close</button></div>
+     </div>
+     <div class="inspector-tabs" role="tablist" aria-label="Visual settings">
+      <button id="forms-tab" type="button" role="tab" aria-controls="forms-panel" aria-selected="true">Forms</button>
+      <button id="color-tab" type="button" role="tab" aria-controls="color-panel" aria-selected="false" tabindex="-1">Color</button>
+      <button id="motion-tab" type="button" role="tab" aria-controls="motion-panel" aria-selected="false" tabindex="-1">Motion</button>
+     </div>
+    </div>
+    <div class="inspector-content">
+     <div id="forms-panel" role="tabpanel" aria-labelledby="forms-tab"><fieldset><legend>01 / FORM</legend><div class="modes" id="form-picker" aria-label="Visual forms"></div><p id="form-description" class="control-note">Layered wireframe and particle skin.</p></fieldset></div>
+     <div id="color-panel" role="tabpanel" aria-labelledby="color-tab" hidden><fieldset><legend>02 / PALETTE</legend><div class="palettes"><button data-palette="0" class="swatch sage" aria-label="(1) Acid green palette" aria-pressed="true"></button><button data-palette="1" class="swatch ice" aria-label="(2) Glacier blue palette" aria-pressed="false"></button><button data-palette="2" class="swatch rose" aria-label="(3) Ultraviolet palette" aria-pressed="false"></button><button data-palette="3" class="swatch amber" aria-label="(4) Solar orange palette" aria-pressed="false"></button>
+    <button data-palette="4" class="swatch jade" aria-label="(5) Jade palette" title="Jade" aria-pressed="false"></button>
+    <button data-palette="5" class="swatch cobalt" aria-label="(6) Cobalt palette" title="Cobalt" aria-pressed="false"></button>
+    <button data-palette="6" class="swatch orchid" aria-label="(7) Orchid palette" title="Orchid" aria-pressed="false"></button>
+    <button data-palette="7" class="swatch vermilion" aria-label="(8) Vermilion palette" title="Vermilion" aria-pressed="false"></button>
+   </div><span id="palette-name" class="palette-name">ACID / 01</span>
+   <div id="saved-palette-controls" hidden>
+    <p class="slider-label">Saved palettes</p>
+    <div id="saved-palette" class="saved-palette-list" role="group" aria-label="Saved palettes"></div>
+    <div id="manage-palette" class="preset-actions" hidden>
+     <button id="rename-palette" type="button">Rename</button><button id="update-palette" type="button">Update</button>
+     <button id="duplicate-palette" type="button">Duplicate</button><button id="delete-palette" type="button">Delete</button>
+    </div>
+   </div>
+   <div class="preset-actions"><button id="edit-palette" type="button" aria-expanded="false" aria-controls="palette-editor">Edit colors</button></div>
+   <div class="preset-actions">
+    <button id="import-palettes" type="button">Import</button><button id="export-palettes" type="button" disabled>Export</button>
+    <button id="undo-palette-delete" type="button" hidden>Undo delete</button>
+   </div>
+   <input id="palette-import-file" type="file" accept=".json,application/json" hidden>
+   <div id="palette-import-conflict" hidden>
+    <label class="slider-label" for="palette-import-policy">Matching palette names</label>
+    <select id="palette-import-policy"><option value="keep">Keep both</option><option value="replace">Replace existing</option></select>
+    <div class="preset-actions"><button id="confirm-palette-import" type="button">Import palettes</button><button id="cancel-palette-import" type="button">Cancel</button></div>
+   </div>
+   <p id="palette-library-status" class="control-note" role="status"></p>
+   <div id="palette-editor" role="group" aria-labelledby="palette-editor-title" hidden>
+    <p id="palette-editor-title">Custom palette</p>
+    <label class="slider-label" for="custom-palette-name">Palette name</label>
+    <input id="custom-palette-name" type="text" maxlength="40" placeholder="e.g. Midnight blue">
+    <div class="palette-editor-colors">
+     <label>Shadow <input type="color" data-palette-role="shadow"></label>
+     <label>Body <input type="color" data-palette-role="body"></label>
+     <label>Highlight <input type="color" data-palette-role="highlight"></label>
+     <label>Spark <input type="color" data-palette-role="spark"></label>
+    </div>
+    <label class="slider-label" for="palette-preview-form">Preview on</label>
+    <select id="palette-preview-form"><option value="">Current Form</option><option value="flux">Flux</option><option value="relic">Relic</option><option value="swarm">Swarm</option></select>
+    <p class="control-note">Shadow and Body color the Form. Highlight and Spark respond to the music.</p>
+    <div class="preset-actions"><button id="save-palette" type="button">Save palette</button><button id="cancel-palette" type="button">Cancel</button></div>
+    <p id="palette-status" class="control-note" role="status"></p>
+   </div></fieldset></div>
+     <div id="motion-panel" role="tabpanel" aria-labelledby="motion-tab" hidden><fieldset><legend><label for="sensitivity">Sensitivity</label><output id="gain-value" for="sensitivity">1.4×</output></legend><input id="sensitivity" type="range" min="0.4" max="3" step="0.1" value="1.4"><div class="range-label"><span>SUBTLE</span><span>INTENSE</span></div></fieldset><div class="camera-label"><label for="camera">Camera motion</label><output id="camera-value" for="camera">35%</output></div><input id="camera" type="range" min="0" max="1" step="0.05" value="0.35"><div class="range-label"><span>OFF</span><span>DRIFT</span></div><button id="motion" class="motion" aria-pressed="false"><span id="motion-icon">Ⅱ</span> <span id="motion-text">Pause visuals</span></button>
+<details class="advanced view-settings"><summary>Framing and saved view</summary>
+ <label class="slider-label" for="view-center-x">Horizontal offset</label><input id="view-center-x" type="range" min="-25" max="25" value="0">
+ <label class="slider-label" for="view-center-y">Vertical offset</label><input id="view-center-y" type="range" min="-25" max="25" value="0">
+ <div class="preset-actions"><button id="save-form-view" type="button">Save this view</button><button id="clear-form-view" type="button">Clear saved view</button></div>
+ <p id="form-view-status" class="control-note" role="status"></p>
+</details>
+<div class="reaction-compare" role="group" aria-labelledby="replay-heading"><p id="replay-heading" class="slider-label">A/B replay</p>
+  <button id="music-compare" class="small-control" type="button" role="switch" aria-label="Music response A/B" aria-checked="true">A · Music response</button>
+  <p class="control-note">Compare music response with base motion. Replay uses visual data only. Music and live meters keep running.</p>
+  <label class="slider-label" for="comparison-bass">Sustained bass</label>
+  <meter id="comparison-bass" min="0" max="1" value="0"></meter>
+  <p id="comparison-kicks" class="control-note">Bass 0% · Kicks (5 s): 0</p>
+  <p id="comparison-timing" class="control-note">Waiting for a kick</p>
+  <div class="preset-actions" role="group" aria-label="Eight-second visual replay">
+    <button id="capture-replay" type="button" disabled>Capture last 8 s</button>
+    <button id="return-live" type="button" hidden>Return live</button>
+  </div>
+  <div id="replay-actions" class="preset-actions" hidden>
+    <button id="replay-a" type="button" aria-pressed="false">Replay A</button>
+    <button id="replay-b" type="button" aria-pressed="false">Replay B</button>
+  </div>
+  <div id="replay-palette-controls" hidden>
+    <label class="slider-label" for="replay-palette-b">Compare captured palette with</label>
+    <select id="replay-palette-b"></select>
+    <div id="replay-palette-swatches" class="replay-palette-swatches"></div>
+    <button id="match-palette-frame" class="small-control" type="button" aria-pressed="false">Match frame</button>
+    <div class="preset-actions"><button id="replay-color-a" type="button" aria-pressed="false">Palette A</button><button id="replay-color-b" type="button" aria-pressed="false">Palette B</button></div>
+  </div>
+  <p id="replay-status" class="control-note" role="status">Collecting visual data</p>
+  <p id="replay-signal" class="control-note" hidden></p>
+  <div id="replay-timeline" hidden>
+   <label class="slider-label" for="replay-progress">Replay position <output id="replay-position" for="replay-progress">0.00 s</output></label>
+   <input id="replay-progress" type="range" min="0" max="8" step="0.01" value="0">
+  </div>
+</div>
+<div class="setting-row"><label for="reduce-transparency">Reduce transparency</label><button id="reduce-transparency" type="button" role="switch" aria-checked="false">Off</button></div>
+<details id="motion-advanced" class="advanced"><summary>Advanced</summary>
+<details class="advanced studio-controls"><summary>Response and release</summary><div class="studio-content">
+<div class="setting-row"><label for="adaptive">Adaptive intensity</label><button id="adaptive" role="switch" aria-checked="true">On</button></div>
+<fieldset class="expression"><legend>EXPRESSION</legend><div class="segmented"><button data-expression="restrained" aria-pressed="false">(1) Restrained</button><button data-expression="dynamic" aria-pressed="true">(2) Dynamic</button></div></fieldset>
+<label class="slider-label" for="bass-weight">Bass weight <output id="bass-weight-value">100%</output></label><input id="bass-weight" type="range" min="0" max="2" step="0.05" value="1">
+<label class="slider-label" for="kick-impact">Kick impact <output id="kick-impact-value">100%</output></label><input id="kick-impact" type="range" min="0" max="2" step="0.05" value="1">
+<label class="slider-label" for="element-intensity">Element intensity <output id="element-intensity-value">100%</output></label><input id="element-intensity" type="range" min="0" max="2" step="0.05" value="1">
+<label class="slider-label" for="spark-amount">Percussion sparks <output id="spark-amount-value">100%</output></label><input id="spark-amount" type="range" min="0" max="2" step="0.05" value="1">
+<label class="slider-label" for="release-threshold">Release threshold <output id="release-threshold-value">0.24</output></label><input id="release-threshold" type="range" min="0.1" max="0.6" step="0.02" value="0.24"><div class="range-label"><span>EASIER</span><span>SELECTIVE</span></div>
+<div class="tension-heading"><label for="tension-meter">TENSION</label><span id="release-history">No release yet</span></div><div class="tension-track"><meter id="tension-meter" min="0" max="1" value="0"></meter><i id="threshold-marker" aria-hidden="true"></i></div><p class="control-note">A sustained rise followed by a bass onset can trigger release. This is an energy heuristic.</p>
+</div></details>
+<details class="advanced studio-controls"><summary>Scenes and quality</summary><div class="studio-content">
+<div class="setting-row"><label for="auto-scenes">Auto choreography</label><button id="auto-scenes" role="switch" aria-checked="false">Off</button></div>
+<div class="setting-row"><label for="scene-lock">Lock current scene</label><button id="scene-lock" role="switch" aria-checked="false">Off</button></div><p id="choreography-state" class="control-note">Manual scenes</p>
+<label class="slider-label" for="quality">Rendering quality</label><select id="quality"><option value="ultra">(1) Ultra</option><option value="auto">(2) Auto</option><option value="high">(3) High</option><option value="medium">(4) Medium</option><option value="low">(5) Low</option></select><p id="quality-status" class="control-note">Ultra · supersampled up to 4K</p><p class="control-note">Ultra favors fine detail. Auto balances quality and animation.</p>
+</div></details>
+<details class="advanced studio-controls"><summary>Listening presets</summary><div class="studio-content">
+<label class="slider-label" for="preset">Preset</label><select id="preset"><option value="current">Current settings</option><optgroup label="Built-in"><option value="ambient">(1) Ambient</option><option value="balanced">(2) Balanced</option><option value="energy">(3) High Energy</option></optgroup><optgroup id="custom-presets" label="Your presets"></optgroup></select>
+<label class="slider-label" for="preset-name">Save as</label><input id="preset-name" type="text" maxlength="32" placeholder="e.g. Late-night orbital" autocomplete="off"><div class="preset-actions"><button id="save-preset">Save new</button><button id="update-preset" disabled>Update</button><button id="remove-preset" disabled>Remove</button></div><p id="preset-status" class="control-note" role="status">Saved in this browser only.</p>
+</div></details><details class="advanced studio-controls"><summary>3D image and interaction</summary><div class="studio-content">
+<label class="slider-label" for="graphics-backend">Renderer</label><select id="graphics-backend"><option value="auto">(1) Three.js 3D</option><option value="canvas">(2) Canvas classic</option></select><p id="graphics-status" class="control-note" role="status">Starting graphics…</p><button id="retry-graphics" class="small-control" hidden>Retry 3D</button>
+<label class="slider-label" for="distortion">Surface distortion <output id="distortion-value">100%</output></label><input id="distortion" type="range" min="0" max="2" step="0.05" value="1">
+<label class="slider-label" for="glow">HDR glow <output id="glow-value">80%</output></label><input id="glow" type="range" min="0" max="1.5" step="0.05" value="0.8">
+<div class="setting-row"><label for="pointer-orbit">Drag to orbit</label><button id="pointer-orbit" role="switch" aria-checked="false">Off</button></div><p class="control-note">Drag empty canvas space to orbit. Camera Off, visual pause, and reduced motion hold the view.</p>
+<details class="graphics-diagnostics"><summary>Image diagnostics</summary><label class="slider-label" for="graphics-debug">View</label><select id="graphics-debug"><option value="final">(1) Final image</option><option value="no-post">(2) No bloom</option><option value="field">(3) Deformation field</option><option value="bloom">(4) Bloom contribution</option></select><label class="slider-label" for="visual-seed">Reproducible seed</label><input id="visual-seed" type="number" min="1" max="9999" step="1" value="71"><p id="graphics-stats" class="control-note">Seed 71</p></details>
+</div></details></details></div></div></aside>
+  <section class="audio-panel" aria-label="Playback dock"><div class="audio-description"><div class="source-label"><span class="dot" id="source-dot"></span><span id="source-state">PREVIEW MODE</span></div><p id="source-description" class="visually-hidden">Connect audio to make the visuals yours.</p></div><div class="live-meters" aria-label="Audio levels"><div class="meter-row"><label for="bass-meter">BASS</label><meter id="bass-meter" min="0" max="1" value="0"></meter></div><div class="meter-row"><label for="mid-meter">MIDS</label><meter id="mid-meter" min="0" max="1" value="0"></meter></div><div class="meter-row"><label for="high-meter">HIGH</label><meter id="high-meter" min="0" max="1" value="0"></meter></div><div class="meter-bottom"><span id="beat-led" role="img" aria-label="Bass onset indicator"></span><span id="dynamics-state">PREVIEW</span></div></div><div class="dock-quick" role="group" aria-label="Visual shortcuts">
+<button id="dock-prev" type="button" aria-label="Previous Form" title="Previous Form">‹</button>
+<button id="dock-pause" type="button" aria-label="Pause visuals" title="Pause visuals">Ⅱ</button>
+<button id="dock-next" type="button" aria-label="Next Form" title="Next Form">›</button>
+<button id="mobile-settings" type="button" aria-controls="visual-settings" aria-expanded="false">Settings</button><button id="stage" type="button">Stage</button></div><div class="audio-actions"><button id="connect" class="primary">Connect audio <span>↗</span></button><a class="spotify" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6 9c4-1.2 8-1 12 1M7 12.5c3-1 7-.7 10 1M8 16c3-.6 5-.4 8 .7" fill="none" stroke="#0b100b" stroke-width="1.6" stroke-linecap="round"/></svg>Open Spotify ↗</a></div></section>
+  <section class="retro-player" aria-label="Spotify playback dock">
+   <div class="retro-title"><span class="retro-brand" aria-hidden="true">ϟ</span><strong>RESONANCE</strong><button id="player-collapse" type="button" aria-expanded="true" aria-controls="player-face" aria-label="Collapse player">−</button><button id="player-resize" type="button" aria-label="Resize player" aria-describedby="player-resize-help" title="Drag to resize · Double-click to reset"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M9 3h4v4M7 13H3V9M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+   <span id="player-resize-help" class="visually-hidden">Drag or use the arrow keys to resize. Press Home to reset.</span>
+   <div id="player-face">
+    <div class="retro-menu">
+     <details class="retro-dropdown"><summary>File</summary><div class="retro-popup">
+      <a href="spotify:">Open Spotify desktop ↗</a>
+      <button id="player-apple-audio" type="button">Connect Apple Music…</button>
+      <button id="player-apple-playback" type="button">Apple Music playback…</button>
+      <button id="player-audio" type="button">Connect audio</button>
+     </div></details>
+     <details class="retro-dropdown"><summary>Play</summary><div class="retro-popup">
+      <button type="button" data-player-command="play" disabled>Play</button>
+      <button type="button" data-player-command="pause" disabled>Pause</button>
+      <button type="button" data-player-command="stop" disabled>Stop</button>
+      <button type="button" data-player-command="previous" disabled>Previous track</button>
+      <button type="button" data-player-command="next" disabled>Next track</button>
+     </div></details>
+     <details class="retro-dropdown"><summary>Options</summary><div class="retro-popup">
+      <button type="button" data-player-command="repeat" aria-pressed="false" disabled>Repeat: off</button>
+      <button type="button" data-player-command="shuffle" aria-pressed="false" disabled>Shuffle</button>
+      <button type="button" data-player-command="mute" aria-pressed="false" disabled>Mute</button>
+      <button id="player-config-menu" type="button">Visualizer settings</button>
+     </div></details>
+     <details class="retro-dropdown"><summary>View</summary><div class="retro-popup">
+      <button id="player-stage" type="button">Stage</button>
+      <button id="player-meter-mode" type="button" aria-pressed="false">Waveform display</button>
+      <button id="player-time-mode" type="button" aria-pressed="false">Time remaining</button>
+      <button id="player-size-reset" type="button">Reset player size</button>
+     </div></details>
+     <details class="retro-dropdown"><summary>Help</summary><div class="retro-popup">
+      <button id="player-audio-help" type="button">Audio setup</button>
+      <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer">Spotify Web Player ↗</a>
+     </div></details>
+     <details class="retro-dropdown" id="player-skins">
+      <summary>Skins</summary>
+      <div class="retro-popup retro-skin-list" role="group" aria-label="Player skins"></div>
+     </details>
+     <details class="retro-dropdown" id="player-visualizations">
+      <summary>Visualizations</summary>
+      <div class="retro-popup retro-form-list" role="group" aria-label="Visualizations"></div>
+     </details>
+    </div>
+    <div class="retro-display">
+     <div class="retro-readout"><span id="player-indicator" aria-hidden="true">■</span><time id="player-time">–:––</time></div>
+     <div class="retro-flags"><span id="player-link-state">SPOTIFY DESKTOP</span><span id="player-signal-state">PREVIEW MODE</span><span id="player-sample-rate" hidden></span></div>
+     <canvas id="player-spectrum" width="216" height="62" aria-hidden="true"></canvas>
+     <div id="player-track" title="Play a track in Spotify desktop">Play a track in Spotify desktop</div>
+    </div>
+    <div class="retro-seek"><input id="player-seek" type="range" aria-label="Seek in Spotify track" min="0" max="1" value="0" disabled><time id="player-duration">–:––</time></div>
+    <div class="retro-deck">
+     <div class="retro-transport" role="group" aria-label="Spotify playback">
+      <button type="button" data-player-command="previous" aria-label="Previous track" title="Previous track" disabled>◀◀</button>
+      <button type="button" data-player-command="play" aria-label="Play Spotify" title="Play Spotify" disabled>▶</button>
+      <button type="button" data-player-command="pause" aria-label="Pause Spotify" title="Pause Spotify" disabled>Ⅱ</button>
+      <button type="button" data-player-command="stop" aria-label="Stop playback" title="Stop playback" disabled>■</button>
+      <button type="button" data-player-command="next" aria-label="Next track" title="Next track" disabled>▶▶</button>
+     </div>
+     <div class="retro-level">
+      <button class="retro-mini" type="button" data-player-command="mute" aria-label="Mute Spotify" aria-pressed="false" title="Mute Spotify on this PC" disabled>◖))</button>
+      <input id="player-volume" type="range" aria-label="Spotify volume on this PC" min="0" max="100" value="0" disabled>
+      <output id="player-volume-value" for="player-volume">–</output>
+     </div>
+    </div>
+    <div class="retro-tools" role="group" aria-label="Playback modes and shortcuts">
+     <button class="retro-mini" type="button" data-player-command="repeat" aria-label="Repeat: off" aria-pressed="false" title="Repeat: off" disabled>↻</button>
+     <button class="retro-mini" type="button" data-player-command="shuffle" aria-label="Shuffle" aria-pressed="false" title="Shuffle" disabled>⇄</button>
+     <span class="retro-tools-space"></span>
+     <button class="retro-mini" id="player-source" type="button" aria-label="Audio source" title="Audio source">⏏</button>
+     <button class="retro-mini" id="player-queue" type="button" aria-label="Spotify Play Queue" title="Spotify Play Queue" aria-controls="player-accessory" aria-expanded="false">PL</button>
+     <button class="retro-mini" id="player-library" type="button" aria-label="Spotify library" title="Spotify library" aria-controls="player-accessory" aria-expanded="false">ML</button>
+     <button class="retro-mini" id="player-config" type="button" aria-label="Visualizer settings" title="Visualizer settings">CONFIG</button>
+    </div>
+    <div id="player-accessory" class="retro-accessory" hidden>
+     <strong id="player-accessory-title"></strong>
+     <p id="player-accessory-copy"></p>
+     <a href="spotify:">Open Spotify desktop ↗</a>
+    </div>
+    <p id="player-feedback" role="status" hidden></p>
+   </div>
+  </section>
+</main>
+<footer><span>LOOK CLOSER. LISTEN DEEPER.</span><div class="spectrum" aria-hidden="true"></div><span id="signal-status">SIMULATED SIGNAL · NO AUDIO CONNECTED</span></footer>
+<div id="listening-feedback" class="listening-feedback" hidden><div class="signal-panel-header"><span id="signal-drag-handle" role="button" tabindex="0" aria-label="Move signal panel. Arrow keys move. Home resets.">SIGNAL / DRAG</span><button id="reset-signal-panel" aria-label="Reset signal panel position" title="Reset position">↺</button></div><span id="listen-source">PREVIEW MODE</span><div class="listen-meter-row"><label for="listen-bass">BASS</label><meter id="listen-bass" min="0" max="1" value="0"></meter><label for="listen-mid">MIDS</label><meter id="listen-mid" min="0" max="1" value="0"></meter><label for="listen-high">HIGH</label><meter id="listen-high" min="0" max="1" value="0"></meter></div><div class="listen-tension"><label for="listen-tension-meter">TENSION</label><meter id="listen-tension-meter" min="0" max="1" value="0"></meter><span id="listen-phase">PREVIEW</span></div></div>
+<nav id="listening-toolbar" class="listening-toolbar" aria-label="Listening controls" hidden><button id="listen-prev" aria-label="Previous Form" title="Previous Form">‹</button><button id="listen-next" aria-label="Next Form" title="Next Form">›</button><button id="listen-pause">Pause</button><button id="listen-settings" aria-controls="visual-settings" aria-expanded="false">Settings</button><button id="listen-meters" role="switch" aria-checked="true">Meters</button><button id="listen-zoom-out" type="button" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/></svg></button><button id="listen-zoom-reset" class="zoom-value" type="button" aria-label="Reset zoom to 100%" title="Reset zoom (0)">100%</button><button id="listen-zoom-in" type="button" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/><path d="M8 6v4"/></svg></button><button id="listen-framing-toggle" class="view-mode" type="button" aria-label="Fill viewport" aria-pressed="false">Fit</button><button id="listen-fullscreen">Fullscreen</button><button id="listen-exit">Exit listening</button></nav><dialog id="setup"><div class="dialog-top"><span class="eyebrow">AUDIO INPUT</span><button id="close-setup" class="icon" aria-label="Close audio setup">×</button></div><h2>Let the music in.</h2><p>Choose the service playing your music.</p><div class="setup-service"><label for="music-provider">Music service</label><select id="music-provider"><option value="spotify">Spotify</option><option value="apple">Apple Music</option></select><a id="setup-service-link" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer">Open Spotify Web Player ↗</a></div><ol><li>Start a track in the music tab.</li><li>Choose <strong>Share music audio</strong> below.</li><li>In the browser picker, select the music tab and enable <strong>Also share tab audio</strong>.</li></ol><p class="note">For a Windows desktop music app, select <strong>Entire screen</strong> and enable <strong>Also share system audio</strong> if offered. Use Apple Music to manage its playback.</p><button id="share" class="primary">Share music audio <span>↗</span></button><div class="alternatives"><button id="microphone">(2) Use microphone</button><button id="demo">(3) Preview visuals</button></div><p class="privacy">Audio is analyzed on your device. Nothing is recorded or uploaded. Shared video frames are never displayed or processed.</p><p id="setup-error" role="alert"></p></dialog>
+<dialog id="apple-playback" aria-labelledby="apple-playback-title">
+ <div class="dialog-top"><span class="eyebrow">MUSIC SERVICE</span><form method="dialog"><button class="icon" aria-label="Close Apple Music playback">×</button></form></div>
+ <h2 id="apple-playback-title">Apple Music playback</h2>
+ <p id="apple-playback-status" role="status"></p>
+ <button id="apple-authorize" class="primary" type="button" disabled>Sign in to Apple Music</button>
+ <form id="apple-track-form" hidden>
+  <label for="apple-track-link">Apple Music song link</label>
+  <input id="apple-track-link" type="url" placeholder="https://music.apple.com/…" required>
+  <button class="primary" type="submit">Play in Resonance</button>
+ </form>
+ <p id="apple-share-note" hidden>For reactive visuals, share this Resonance tab with tab audio enabled. If it isn’t listed, share your entire screen with system audio.</p>
+ <button id="apple-share" class="primary" type="button" hidden>Share Resonance audio</button>
+ <div class="alternatives"><button type="button" id="apple-external">Use an Apple Music tab instead</button></div>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+</body></html>

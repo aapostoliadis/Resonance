@@ -1,0 +1,8 @@
+GSAP 3.15.1, Draggable and InertiaPlugin
+Copyright 2008-2026 GreenSock. All rights reserved.
+
+Distributed subject to the GSAP Standard License:
+https://gsap.com/community/standard-license/
+
+License effective date: April 30, 2025; last modified May 30, 2025, as displayed on the official page when checked November 6, 2026.
+The authoritative license is at the URL above. Copyright notices from the distributed source remain in graphics.bundle.js.LEGAL.txt.

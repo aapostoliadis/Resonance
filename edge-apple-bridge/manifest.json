@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Resonance Apple Music Bridge",
+  "version": "1.0.0",
+  "description": "Shares Apple Music playback position with your local Resonance deck.",
+  "background": {"service_worker": "worker.js"},
+  "host_permissions": ["https://music.apple.com/*"],
+  "content_scripts": [
+    {"matches": ["https://music.apple.com/*"], "js": ["apple-tab.js"], "world": "MAIN"},
+    {"matches": ["https://music.apple.com/*"], "js": ["apple-relay.js"]},
+    {"matches": ["http://127.0.0.1/*"], "js": ["deck-relay.js"]}
+  ]
+}
