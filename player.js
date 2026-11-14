@@ -90,8 +90,8 @@
   option.setAttribute('aria-label',name);
   option.setAttribute('aria-pressed','false');
   option.addEventListener('click',() => {
-   select();
    closeMenu(list.closest('details'),true);
+   select();
   });
   list.append(option);
   return option;
@@ -402,7 +402,7 @@
  for (const id of ['player-config','player-config-menu']) {
   get(id).addEventListener('click',() => {
    selectInspectorTab(get('motion-tab'));
-   if (mobileSettings.matches) setSettingsOpen(true);
+   if (packageMode === 'desktop' || mobileSettings.matches) setSettingsOpen(true);
    else get('motion-tab').focus({preventScroll:true});
   });
  }
@@ -427,7 +427,9 @@
    get('player-accessory').hidden = !opened;
   });
  }
- get('player-stage').addEventListener('click',() => get('stage').click());
+ for (const id of ['player-stage','player-visualize']) {
+  get(id).addEventListener('click',openStage);
+ }
  const grip = get('player-resize');
  const sizeStorageKey = 'resonance.playerSize.v1';
  const defaults = {width:402, meter:37};
@@ -438,6 +440,7 @@
    meter:Math.round(Math.min(210,Math.max(37,meter)))};
   player.style.setProperty('--player-width',size.width + 'px');
   player.style.setProperty('--player-meter',size.meter + 'px');
+  fitWindow();
   if (save) {
    try {localStorage.setItem(sizeStorageKey,JSON.stringify(size));} catch {}
   }
@@ -488,6 +491,32 @@
   event.currentTarget.setAttribute('aria-label',face.hidden ? 'Expand player' : 'Collapse player');
   event.currentTarget.textContent = face.hidden ? '+' : '−';
  });
+ function fitWindow() {
+  if (!window.resonanceDeck) return;
+  const height = Math.ceil(player.getBoundingClientRect().height);
+  if (!height) return;
+  const expanded = document.body.classList.contains('settings-open') || Boolean(document.querySelector('dialog[open]'));
+  window.resonanceDeck.resize(size.width,height,expanded);
+ }
+ if (window.resonanceDeck) {
+  for (const [action,label,symbol] of [['minimize','Minimize Resonance','–'],['close','Close Resonance','×']]) {
+   const button = document.createElement('button');
+   button.type = 'button';
+   button.className = 'native-window-control';
+   button.setAttribute('aria-label',label);
+   button.title = label;
+   button.textContent = symbol;
+   button.addEventListener('click',window.resonanceDeck[action]);
+   grip.parentElement.append(button);
+  }
+  new ResizeObserver(fitWindow).observe(player);
+  const viewChanges = new MutationObserver(fitWindow);
+  viewChanges.observe(document.body,{attributes:true,attributeFilter:['class']});
+  for (const dialog of document.querySelectorAll('dialog')) {
+   viewChanges.observe(dialog,{attributes:true,attributeFilter:['open']});
+  }
+  fitWindow();
+ }
  window.addEventListener('pagehide',event => {if (!event.persisted) clearTimeout(nextPoll);});
  pollWhenVisible();
  window.setInterval(pollEdgeApple,900);

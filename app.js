@@ -144,6 +144,8 @@ if(packageMode==='mobile'){
  $('#share').hidden=true;
 }
 if(packageMode==='desktop'){
+ document.documentElement.classList.add('desktop-player');
+ if(window.resonanceDeck)document.documentElement.classList.add('desktop-deck');
  $('#setup ol').innerHTML='<li>Start a track in your music app or browser.</li><li>Choose Share music audio and confirm system audio capture.</li>';
  $('#setup .note').textContent='Use your music app for playback controls when they are unavailable in Resonance.';
 }
@@ -530,6 +532,7 @@ function drawReferenceCanvas(state,{cx,cy,base,t,bass,p,reaction}){
 }
 
 function draw(now=performance.now()){
+ if(packageMode==='desktop'&&!listening)return;
  const preview=paletteDraft?{...state,mode:$('#palette-preview-form').value||state.mode,palette:CUSTOM_PALETTE,customPalette:paletteDraft,transition:null}:state;
  const scene=visualFrame(replayRun?replayScene(now):preview);
  if(scene.mode==='horizon')prepareHorizon();
@@ -594,7 +597,7 @@ function frame(now){const frameMs=lastFrame?now-lastFrame:16.7,delta=Math.min(fr
   if(!replayRun||(!replayRun.finished&&replayRun.held===null))draw(now);
   const drawMs=performance.now()-drawStart;
   qualityWarmup+=delta;
-  if(!replayRun&&state.quality==='auto'&&qualityWarmup>2&&qualityGovernor.update(frameMs,drawMs,delta))refreshQuality();
+  if((packageMode!=='desktop'||listening)&&!replayRun&&state.quality==='auto'&&qualityWarmup>2&&qualityGovernor.update(frameMs,drawMs,delta))refreshQuality();
  }else if(replayRun&&!replayRun.finished&&replayRun.held===null){draw(now);}
  bars.forEach((bar,i)=>{const v=frequency?frequency[Math.floor((i/40)**2*(frequency.length-1))]/255:(Math.sin(now/1000*3+i*.7)*.5+.5)*(.3+(musicSignal?.bass??0));bar.style.height=`${2+v*22}px`;});
  }requestAnimationFrame(frame);}
@@ -737,6 +740,20 @@ async function toggleFullscreen(){
  }catch{message('Fullscreen is unavailable in this browser window.');}
 }
 $('#fullscreen').addEventListener('click',toggleFullscreen);
+async function openStage(){
+ document.body.classList.add('stage-mode');
+ if(packageMode==='desktop'&&!document.fullscreenElement){
+  try{
+   await document.documentElement.requestFullscreen();
+   return;
+  }catch{
+   setListening(true);
+   message('Fullscreen is unavailable in this window.');
+   return;
+  }
+ }
+ setListening(true);
+}
 let chromeTimer;
 function revealChrome(event){
  if(!listening&&!document.fullscreenElement)return;
@@ -798,9 +815,9 @@ function expandSettings(open){
  $('#expand-settings').textContent=open?'Collapse':'Expand';
 }
 function syncSettingsVisibility(){
- $('.inspector').inert=(listening||mobileSettings.matches)&&!settingsOpen;
+ $('.inspector').inert=(packageMode==='desktop'||listening||mobileSettings.matches)&&!settingsOpen;
  $('.audio-panel').inert=listening||(mobileSettings.matches&&settingsOpen);
- $('#listening-toolbar').inert=mobileSettings.matches&&settingsOpen;
+ $('#listening-toolbar').inert=mobileSettings.matches&&settingsOpen&&packageMode!=='desktop';
  $('#listen-settings').setAttribute('aria-expanded',String(listening&&settingsOpen));
  if(mobileSettings.matches)$('#mobile-settings').setAttribute('aria-expanded',String(!listening&&settingsOpen));
  else $('#mobile-settings').removeAttribute('aria-expanded');
@@ -816,7 +833,9 @@ function setSettingsOpen(open){
   restoreInspectorScroll();
   activeInspectorTab().focus({preventScroll:true});
  }else{
-  if(listening||mobileSettings.matches)(listening?$('#listen-settings'):$('#mobile-settings')).focus();
+  if(listening)$('#listen-settings').focus();
+  else if(packageMode==='desktop')$('#player-config').focus();
+  else if(mobileSettings.matches)$('#mobile-settings').focus();
   revealChrome();
  }
 }
@@ -830,7 +849,8 @@ function setListening(enabled){
  listening=enabled;document.body.classList.toggle('listening',listening);$('#listening-toolbar').hidden=!listening;
  $('header').inert=listening;$('.audio-panel').inert=listening;$('footer').inert=listening;
  settingsOpen=false;document.body.classList.remove('settings-open');syncSettingsVisibility();refreshStudioControls();
- if(listening){(document.body.classList.contains('stage-mode')?$('#listen-prev'):$('#listen-settings')).focus();revealChrome();}else{clearTimeout(chromeTimer);document.body.classList.remove('ui-visible');if(lastFocus?.isConnected&&!lastFocus.closest('[hidden]'))lastFocus.focus();else $('#listening').focus();
+ if(listening&&packageMode==='desktop'&&document.body.classList.contains('stage-mode'))setSettingsOpen(true);
+ else if(listening){(document.body.classList.contains('stage-mode')?$('#listen-prev'):$('#listen-settings')).focus();revealChrome();}else{clearTimeout(chromeTimer);document.body.classList.remove('ui-visible');if(lastFocus?.isConnected&&!lastFocus.closest('[hidden]'))lastFocus.focus();else $('#listening').focus();
   if(!mobileSettings.matches)restoreInspectorScroll();
  }
  draw();
@@ -1108,10 +1128,7 @@ function initializeStudio(){
  for(const id of ['dock-next','listen-next'])$('#'+id).addEventListener('click',()=>stepForm(1));
  for(const id of ['dock-pause','listen-pause'])$('#'+id).addEventListener('click',()=>$('#motion').click());
  $('#listening').addEventListener('click',()=>setListening(true));
- $('#stage').addEventListener('click',()=>{
-  document.body.classList.add('stage-mode');
-  setListening(true);
- });
+ $('#stage').addEventListener('click',openStage);
  $('#listen-settings').addEventListener('click',()=>setSettingsOpen(!settingsOpen));
  $('#listen-exit').addEventListener('click',async()=>{if(document.fullscreenElement)await document.exitFullscreen();setListening(false);});
  $('#listen-fullscreen').addEventListener('click',toggleFullscreen);
@@ -1193,7 +1210,7 @@ function initializeStudio(){
    if(Object.hasOwn(zoomKeys,event.key)){event.preventDefault();changeZoom(zoomKeys[event.key]);return;}
   }
   if(event.key!=='Escape')return;
-  if(settingsOpen){event.preventDefault();setSettingsOpen(false);}
+  if(settingsOpen&&!(listening&&packageMode==='desktop'&&document.body.classList.contains('stage-mode'))){event.preventDefault();setSettingsOpen(false);}
   else if(listening&&document.fullscreenElement){event.preventDefault();document.exitFullscreen().catch(()=>message('Use the Windowed control to leave fullscreen.'));}
   else if(listening)setListening(false);
  });

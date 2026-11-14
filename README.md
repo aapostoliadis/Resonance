@@ -60,7 +60,7 @@ For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](ed
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64.exe) |
+| Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64.exe). Opens to the frameless deck. Click **VIS** for fullscreen with **Settings** open. |
 | macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon.zip) |
 | macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel.zip) |
 | Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android.apk) |
@@ -83,6 +83,6 @@ npm start
 | `player.js`, `player.css` | Playback, spectrum display, skins, and the resizable deck |
 | `server.cjs`, `spotify-media.ps1` | Loopback server and Windows Spotify media integration |
 | `edge-apple-bridge/` | Local Apple Music metadata and seek integration for Edge |
-| `desktop-main.cjs`, `packaging/` | Electron and mobile app entry points |
+| `desktop-main.cjs`, `desktop-preload.cjs`, `packaging/` | Electron and mobile app entry points |
 
 Third-party notices and visual references are documented in [CREDITS.md](CREDITS.md).

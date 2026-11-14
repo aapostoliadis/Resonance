@@ -15,6 +15,24 @@
  background: linear-gradient(155deg,#f5f7fa 8%,#aab4c4 70%,#f5f6f9);
  box-shadow: 0 14px 36px #0009, 0 0 0 1px #69748d;
 }
+.desktop-player body:not(.listening) :is(#visual,#visual-3d,.vignette,header,footer,.intro,.stage-label),
+.desktop-player body:not(.listening):not(.settings-open) .inspector { display: none; }
+.desktop-player body:not(.listening).settings-open .sheet-actions { display: flex; }
+.desktop-deck body:not(.listening) { overflow: hidden; }
+.desktop-deck body:not(.listening) main { padding: 0; min-height: 0; }
+.desktop-deck .retro-player {
+ position: relative; inset: auto; width: 100vw;
+ border-radius: 0; box-shadow: none;
+}
+.desktop-deck .retro-title { border-radius: 0; }
+.desktop-deck .retro-title { grid-template-columns: 24px minmax(0,1fr) repeat(4,auto); }
+.desktop-deck .retro-title :is(strong,.retro-brand) { -webkit-app-region: drag; }
+.native-window-control { min-width: 25px; color: inherit; }
+.desktop-deck .retro-popup { max-height: min(290px,var(--retro-popup-space,290px)); }
+.desktop-deck body.settings-open:not(.listening) .inspector {
+ position: fixed; inset: 16px; width: auto; height: auto; max-height: none; margin: 0;
+}
+.desktop-deck dialog { max-height: calc(100dvh - 24px); overflow: auto; }
 .retro-title {
  display: grid; grid-template-columns: 24px 1fr 26px auto; align-items: center; gap: 8px;
  padding: 3px 7px; color: #dce6fa; background: linear-gradient(#6e7d96,#162740 60%,#233650);
@@ -69,6 +87,7 @@
 .retro-flags { display: grid; justify-items: start; gap: 3px; font: bold 9px/1.2 Consolas,monospace; }
 .retro-flags span { padding: 2px 4px; border-radius: 2px; background: #d9e9ff; color: #182f57; }
 #player-spectrum { display: block; width: 100%; height: clamp(37px,var(--player-meter,37px),calc(100dvh - 270px)); border: solid #718dab; border-width: 0 0 1px 1px; }
+.desktop-deck #player-spectrum { height: var(--player-meter,37px); }
 #player-track { grid-column: 1 / -1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 5px 0 6px; border-top: 1px solid #819dc84d; font: 12px Consolas,monospace; letter-spacing: .055em; }
 .retro-seek { display: flex; align-items: center; gap: 8px; margin: 7px 10px; font: 11px Consolas,monospace; }
 .retro-seek input[type=range] { height: 15px; margin: 0; min-width: 0; accent-color: #2c568f; }

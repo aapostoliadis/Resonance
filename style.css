@@ -302,7 +302,7 @@ body.reduced-transparency :is(header,.audio-panel,.inspector,.intro,.stage-label
  background-size:cover;
 }
 .view-mode[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
-body.stage-mode :is(#listen-settings,#listen-meters,#listening-feedback){display:none!important}
+body.stage-mode :is(#listen-meters,#listening-feedback),html:not(.desktop-player) body.stage-mode #listen-settings{display:none!important}
 body.stage-mode .listening-toolbar{width:max-content;max-width:calc(100vw - 24px)}
 @media(max-width:650px){
  body.stage-mode .listening-toolbar{display:flex;justify-content:center}
