@@ -10,6 +10,8 @@ Both demos show the current browser build in Preview mode.
 
 ## Download Resonance 2.5.0
 
+The current packages include the menu fix on all five builds.
+
 | Platform | Download |
 | --- | --- |
 | <img src="docs/media/windows.svg" width="16" height="16" alt=""> Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Menu-Fix.exe) |
@@ -17,6 +19,8 @@ Both demos show the current browser build in Preview mode.
 | <img src="docs/media/macos.svg" width="16" height="16" alt=""> macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel-Menu-Fix.zip) |
 | <img src="docs/media/android.svg" width="16" height="16" alt=""> Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android-Menu-Fix.apk) |
 | <img src="docs/media/iphone.svg" width="16" height="16" alt=""> iPhone | [Xcode project ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-iPhone-Xcode-Menu-Fix.zip) |
+
+The macOS builds require macOS 13 or later. The Android APK requires Android 8 or later, and the iPhone project targets iOS 16.4 or later.
 
 On Windows, click **Visualizer** in the deck to open the fullscreen stage with **Settings** visible. On iPhone, build and sign the project in Xcode before installing.
 
