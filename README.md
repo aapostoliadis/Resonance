@@ -12,7 +12,7 @@ Both demos use the Windows app and a generated local audio track. The playback d
 
 ## Download Resonance 2.5.2
 
-The v2.5.2 release bundles the verified dropdown fixes for all five platform packages and a refreshed source ZIP. The app packages retain their internal 2.5.0 version numbers.
+The v2.5.2 release bundles the verified dropdown fixes for all five platform packages and a refreshed source ZIP. The app packages report version 2.5.2.
 
 | Platform | Download |
 | --- | --- |

@@ -1,6 +1,6 @@
 {
   "name": "resonance-visualizer",
-  "version": "2.5.0",
+  "version": "2.5.2",
   "private": true,
   "description": "Local Spotify audio-reactive visual studio with Three.js and Canvas fallback",
   "scripts": {

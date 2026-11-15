@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.resonance.visualizer" android:versionCode="20500" android:versionName="2.5.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.resonance.visualizer" android:versionCode="20502" android:versionName="2.5.2">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />

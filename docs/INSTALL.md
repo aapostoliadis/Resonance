@@ -1,4 +1,4 @@
-# Resonance 2.5.0
+# Resonance 2.5.2
 
 - **Windows x64** · Run `Resonance-Windows-x64-Dropdown-Fix.exe` to open the compact, frameless Resonance deck. Choose a Form from **Visualizations**, then click **Visualizer** beside **Shuffle** to open it full screen with **Settings** already open. **View → Stage** also opens the selected Form. Press **Esc** or click **Exit Stage** to return to the deck. For music playing on your PC, use **Connect audio → Share music audio**. Spotify desktop controls use the Windows media session. This portable build includes its own runtime and has no publisher signature.
 
