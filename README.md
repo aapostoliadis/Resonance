@@ -63,10 +63,10 @@ For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](ed
 | Platform | Download |
 | --- | --- |
 | Windows x64 | [Portable EXE with the menu fix](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Menu-Fix.exe). Opens to the frameless deck. Click **Visualizer** for fullscreen with **Settings** open. |
-| macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon-Harmonic-Fold.zip) |
-| macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel-Harmonic-Fold.zip) |
-| Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android-Harmonic-Fold.apk) |
-| iPhone | [Xcode project ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-iPhone-Xcode-Harmonic-Fold.zip). Build and sign it in Xcode to install it on a device. |
+| macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon-Menu-Fix.zip) |
+| macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel-Menu-Fix.zip) |
+| Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android-Menu-Fix.apk) |
+| iPhone | [Xcode project ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-iPhone-Xcode-Menu-Fix.zip). Build and sign it in Xcode to install it on a device. |
 
 [Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.0) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
 
