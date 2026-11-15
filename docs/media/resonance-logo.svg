@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Resonance Harmonic Fold">
+  <rect width="128" height="128" rx="28" fill="#102631"/>
+  <path d="M22 83C39 85 43 55 62 38C76 26 94 32 105 46" fill="none" stroke="#A8E4DD" stroke-width="7" stroke-linecap="round"/>
+  <path d="M22 83C41 85 51 71 64 60C77 50 93 54 105 68" fill="none" stroke="#65AFA9" stroke-width="6" stroke-linecap="round"/>
+</svg>

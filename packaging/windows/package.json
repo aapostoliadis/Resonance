@@ -1,0 +1,9 @@
+{
+  "name": "resonance-windows-build",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "electron": "45.3.2",
+    "electron-builder": "26.15.3"
+  }
+}

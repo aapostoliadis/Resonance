@@ -119,6 +119,7 @@ const qualityGovernor=new QualityGovernor(),sceneDirector=new SceneDirector();
 let density=1,qualityLevel=2,qualityWarmup=0,listening=false,settingsOpen=false,lastFocus=null,listeningBeforeFullscreen=false,activePreset='current';
 let threeView=null,threeCanvas=null,graphicsFailure='',signalPanel=null;
 let width=0,height=0,lastFrame=0,stream=null,audioContext=null,analyser=null,input=null,frequency=null,linearFrequency=null,waveform=null,operation=0,pending=false,lastUi=0;
+let localTrack=null,openingTrack=null;
 let seed=71;const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
 const particles = Array.from({length:5100},(_,i)=>({y:1-2*(i+.5)/5100,a:i*2.3999632297,r:random(),s:random()}));
 const stars = Array.from({length:95},()=>({x:random(),y:random(),r:random()}));
@@ -157,11 +158,100 @@ function selectMusicProvider(provider){
  link.textContent='Open '+selected.name+' Web Player ↗';
 }
 $('#music-provider').addEventListener('change',event=>selectMusicProvider(event.target.value));
-function updateSource(){const live=state.source!=='demo';$('#source-state').textContent=live?'AUDIO CONNECTED':'PREVIEW MODE';$('.intro').hidden=live;$('#source-description').textContent=live?'Connected, waiting for audio.':'Connect audio to make the visuals yours.';$('#connect').innerHTML=live?'Disconnect audio <span>×</span>':'Connect audio <span>↗</span>';$('#signal-status').textContent=live?'CONNECTED · WAITING FOR AUDIO':'SIMULATED SIGNAL · NO AUDIO CONNECTED';$('#listen-source').textContent=live?'CONNECTED · WAITING':'PREVIEW · SIMULATED';}
-function release(){replayHistory.length=0;const old=stream;stream=null;if(old)old.getTracks().forEach(t=>t.stop());if(input)input.disconnect();input=null;analyser=null;frequency=null;linearFrequency=null;waveform=null;const oldContext=audioContext;audioContext=null;if(oldContext&&oldContext.state!=='closed')oldContext.close().catch(()=>{});musicResponse.reset();recentKicks.length=0;musicSignal=null;state.source='demo';state.bass=state.mid=state.high=state.level=state.beat=state.spark=state.build=state.release=0;state.autoGain=1;state.lastReleaseAt=-Infinity;state.transition=null;state.shockwaves=[];sceneDirector.reset();updateSource();}
-function disconnect(){operation++;release();message('Audio disconnected. Back to simulated preview.');}
+function updateSource(){const live=state.source!=='demo';$('#source-state').textContent=live?'AUDIO CONNECTED':'PREVIEW MODE';$('.intro').hidden=live;$('#source-description').textContent=live?'Connected, waiting for audio.':'Connect audio to make the visuals yours.';$('#connect').innerHTML=live?'Disconnect audio <span>×</span>':'Connect audio <span>↗</span>';$('#signal-status').textContent=live?'CONNECTED · WAITING FOR AUDIO':'SIMULATED SIGNAL · NO AUDIO CONNECTED';$('#listen-source').textContent=live?'CONNECTED · WAITING':'PREVIEW · SIMULATED';document.dispatchEvent(new Event('resonance-source-change'));}
+function disposeLocalTrack(track){
+ track.audio.pause();
+ track.audio.removeAttribute('src');
+ track.audio.load();
+ if(track.id)window.resonanceFiles.close(track.id);
+ else URL.revokeObjectURL(track.url);
+ if(track.context.state!=='closed')void track.context.close().catch(()=>{});
+}
+function cancelLocalOpen(){
+ if(!openingTrack)return;
+ const track=openingTrack;
+ openingTrack=null;
+ disposeLocalTrack(track);
+}
+function release(){
+ replayHistory.length=0;
+ const old=stream;
+ stream=null;
+ old?.getTracks().forEach(track=>track.stop());
+ input?.disconnect();
+ input=analyser=frequency=linearFrequency=waveform=null;
+ const oldContext=audioContext;
+ audioContext=null;
+ if(localTrack){
+  const track=localTrack;
+  localTrack=null;
+  disposeLocalTrack(track);
+ }else if(oldContext&&oldContext.state!=='closed')void oldContext.close().catch(()=>{});
+ musicResponse.reset();
+ recentKicks.length=0;
+ musicSignal=null;
+ state.source='demo';
+ state.bass=state.mid=state.high=state.level=state.beat=state.spark=state.build=state.release=0;
+ state.autoGain=1;
+ state.lastReleaseAt=-Infinity;
+ state.transition=null;
+ state.shockwaves=[];
+ sceneDirector.reset();
+ updateSource();
+}
+function disconnect(){operation++;cancelLocalOpen();release();message('Audio disconnected. Back to simulated preview.');}
+function connectAnalyser(context,source){
+ audioContext=context;
+ input=source;
+ analyser=context.createAnalyser();
+ analyser.fftSize=2048;
+ analyser.smoothingTimeConstant=.35;
+ frequency=new Uint8Array(analyser.frequencyBinCount);
+ linearFrequency=new Float32Array(analyser.frequencyBinCount);
+ waveform=new Float32Array(analyser.fftSize);
+ input.connect(analyser);
+}
+async function openLocalTrack(file){
+ cancelLocalOpen();
+ const id=++operation;
+ const audio=new Audio(file.url);
+ const context=new AudioContext();
+ const track={...file,audio,context};
+ openingTrack=track;
+ try{
+  const source=context.createMediaElementSource(audio);
+  // Decode before replacing the current source. The candidate is inaudible until installed.
+  const resumed=context.resume();
+  resumed.catch(()=>{});
+  try{await audio.play();}
+  catch(error){
+   if(openingTrack!==track||!file.id||error.name!=='NotSupportedError')throw error;
+   const decoded=await window.resonanceFiles.decode(file.id);
+   if(openingTrack!==track)return false;
+   if(!decoded)throw error;
+   audio.src=decoded;
+   await audio.play();
+  }
+  await resumed;
+  if(openingTrack!==track)return false;
+  if(id!==operation){cancelLocalOpen();return false;}
+  audio.currentTime=0;
+  openingTrack=null;
+  release();
+  localTrack=track;
+  connectAnalyser(context,source);
+  analyser.connect(context.destination);
+  state.source='file';
+  updateSource();
+  return true;
+ }catch(error){
+  if(openingTrack!==track)return false;
+  cancelLocalOpen();
+  throw error;
+ }
+}
 async function connectAudio(kind,{ownTab=false}={}){
- if(pending)return;const id=++operation;const provider=$('#music-provider').value;
+ if(pending)return;cancelLocalOpen();const id=++operation;const provider=$('#music-provider').value;
  pending=true;$('#setup-error').textContent='';['#share','#microphone','#demo','#music-provider'].forEach(s=>$(s).disabled=true);let captured=null;
  try{
   if(!navigator.mediaDevices)throw new Error('Audio capture needs a secure browser context. Launch with Start.cmd and open the localhost address in Chrome or Edge.');
@@ -175,8 +265,8 @@ async function connectAudio(kind,{ownTab=false}={}){
   if(id!==operation){captured.getTracks().forEach(t=>t.stop());return;}
   if(!captured.getAudioTracks().length)throw new Error('No audio was shared. Share the music tab with tab audio enabled, or share your entire screen with system audio enabled.');
   release();stream=captured;audioContext=new AudioContext();await audioContext.resume();
-  if(id!==operation){release();return;}
-  analyser=audioContext.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=.35;frequency=new Uint8Array(analyser.frequencyBinCount);linearFrequency=new Float32Array(analyser.frequencyBinCount);waveform=new Float32Array(analyser.fftSize);input=audioContext.createMediaStreamSource(new MediaStream(stream.getAudioTracks()));input.connect(analyser);
+  if(id!==operation){if(stream===captured)release();return;}
+  connectAnalyser(audioContext,audioContext.createMediaStreamSource(new MediaStream(stream.getAudioTracks())));
   // No connection to audioContext.destination: avoid replay and feedback.
   state.source=kind==='mic'?'mic':'shared';if(kind==='shared')musicProvider=provider;
   stream.getTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===captured){release();message('Audio sharing ended. Back to simulated preview.');}},{once:true}));
@@ -204,7 +294,7 @@ function analyse(now,dt){
  analyser.getFloatFrequencyData(linearFrequency);
  function energy(lo,hi){let sum=0;for(let i=Math.max(1,Math.ceil(lo/hz));i<Math.min(linearFrequency.length,Math.ceil(hi/hz));i++)sum+=10**(linearFrequency[i]/10);return Math.sqrt(sum);}
  applyMusic(energy(30,180),energy(180,2400),energy(2400,14000),state.level,dt,now);
- if(now-lastUi>350){lastUi=now;const audible=state.level>.002;$('#source-description').textContent=audible?'Live audio · bass, mids & treble drive the visuals.':'Connected, waiting for audio. Play music or check audio sharing.';$('#signal-status').textContent=audible?(state.source==='mic'?'MICROPHONE':'SHARED AUDIO')+' · LIVE SIGNAL':'CONNECTED · WAITING FOR AUDIO';$('#source-state').textContent=audible?'LIVE AUDIO':'AUDIO CONNECTED';$('#listen-source').textContent=audible?'LIVE AUDIO':'CONNECTED · WAITING';}
+ if(now-lastUi>350){lastUi=now;const audible=state.level>.002;$('#source-description').textContent=audible?'Live audio · bass, mids & treble drive the visuals.':'Connected, waiting for audio. Play music or check audio sharing.';$('#signal-status').textContent=audible?(state.source==='file'?'LOCAL FILE':state.source==='mic'?'MICROPHONE':'SHARED AUDIO')+' · LIVE SIGNAL':'CONNECTED · WAITING FOR AUDIO';$('#source-state').textContent=audible?'LIVE AUDIO':'AUDIO CONNECTED';$('#listen-source').textContent=audible?'LIVE AUDIO':'CONNECTED · WAITING';}
 }
 const canvasPaletteCache=new WeakMap();
 function canvasPaletteInk(palette){
@@ -1217,5 +1307,5 @@ function initializeStudio(){
  document.addEventListener('visibilitychange',()=>{replayHistory.length=0;state.transition=null;sceneDirector.reset();qualityWarmup=0;qualityGovernor.slow=qualityGovernor.fast=0;lastFrame=0;signalPanel?.sync(state.paused,reduced.matches,document.hidden);});
  $('.inspector').addEventListener('input',event=>{if(event.target.closest('#palette-editor,#replay-palette-controls,#replay-timeline,.view-settings')||['preset','preset-name'].includes(event.target.id))return;$('#preset').value='current';$('#preset-status').textContent='Working settings changed. Save new or Update to keep them.';});refreshStudioControls();refreshQuality();
 }
-window.addEventListener('pagehide',()=>{operation++;release();threeView?.dispose();signalPanel?.dispose();});window.addEventListener('pageshow',event=>{if(event.persisted){initializeSignalPanel();initializeGraphics();}});window.addEventListener('resize',resize);
+window.addEventListener('pagehide',()=>{operation++;cancelLocalOpen();release();threeView?.dispose();signalPanel?.dispose();});window.addEventListener('pageshow',event=>{if(event.persisted){initializeSignalPanel();initializeGraphics();}});window.addEventListener('resize',resize);
 initializeStudio();initializeGraphicsControls();refreshMotion();resize();requestAnimationFrame(frame);

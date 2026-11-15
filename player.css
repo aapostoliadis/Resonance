@@ -22,17 +22,29 @@
 .desktop-deck body:not(.listening) main { padding: 0; min-height: 0; }
 .desktop-deck .retro-player {
  position: relative; inset: auto; width: 100vw;
- border-radius: 0; box-shadow: none;
+ border-radius: 0;
 }
 .desktop-deck .retro-title { border-radius: 0; }
 .desktop-deck .retro-title { grid-template-columns: 24px minmax(0,1fr) repeat(4,auto); }
 .desktop-deck .retro-title :is(strong,.retro-brand) { -webkit-app-region: drag; }
-.native-window-control { min-width: 25px; color: inherit; }
-.desktop-deck .retro-popup { max-height: min(290px,var(--retro-popup-space,290px)); }
+.resonance-mark { display: block; flex: none; pointer-events: none; }
+.deck-icon-defs { position: absolute; width: 0; height: 0; }
+.deck-icon {
+ display: inline-block; width: 16px; height: 16px; vertical-align: middle; pointer-events: none;
+ fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.retro-title .deck-title-control { display: grid; place-items: center; min-width: 25px; min-height: 21px; padding: 0 4px; color: inherit; }
+.retro-title .deck-icon { width: 14px; height: 14px; }
+.deck-icon-expand,.deck-icon-muted,.deck-icon-repeat-one { display: none; }
+#player-collapse[aria-expanded=false] .deck-icon-collapse,
+.retro-level [aria-pressed=true] .deck-icon-volume { display: none; }
+#player-collapse[aria-expanded=false] .deck-icon-expand,
+.retro-level [aria-pressed=true] .deck-icon-muted,
+.retro-tools [data-repeat-one] .deck-icon-repeat-one { display: inline; }
 .desktop-deck body.settings-open:not(.listening) .inspector {
  position: fixed; inset: 16px; width: auto; height: auto; max-height: none; margin: 0;
 }
-.desktop-deck dialog { max-height: calc(100dvh - 24px); overflow: auto; }
+.desktop-deck dialog { max-height: calc(100dvh - 24px); overflow: auto; overscroll-behavior: contain; }
 .retro-title {
  display: grid; grid-template-columns: 24px 1fr 26px auto; align-items: center; gap: 8px;
  padding: 3px 7px; color: #dce6fa; background: linear-gradient(#6e7d96,#162740 60%,#233650);
@@ -47,34 +59,40 @@
  display: grid; place-items: center; width: 27px; height: 23px; padding: 0;
  color: inherit; cursor: nesw-resize; touch-action: none; user-select: none;
 }
-.retro-menu { display: flex; flex-wrap: nowrap; gap: 4px; padding: 3px 6px; background: linear-gradient(#fcfdff,#d2d9e4); border-bottom: 1px solid #8490a2; }
+.retro-menu { --retro-popup-gap: 4px; display: flex; flex-wrap: nowrap; gap: 4px; padding: 3px 6px; background: linear-gradient(#fcfdff,#d2d9e4); border-bottom: 1px solid #8490a2; }
 .retro-menu > :is(button,a),.retro-dropdown summary { background: transparent; color: inherit; padding: 5px 3px; font-size: 12px; font-weight: 600; }
-.retro-menu > :is(button,a):hover,.retro-dropdown summary:hover,.retro-spotify:hover { text-decoration: underline; }
+@media (hover: hover) {
+ .retro-spotify:hover { text-decoration: underline; }
+}
 .retro-dropdown { position: relative; }
 .retro-dropdown summary { cursor: pointer; list-style: none; white-space: nowrap; }
 .retro-dropdown summary::-webkit-details-marker { display: none; }
 .retro-dropdown summary::after { content: " ▾"; font-size: 9px; }
 .retro-dropdown[open] summary { background: #7f90aa32; border-radius: 3px; }
 .retro-popup {
- position: absolute; z-index: 1; bottom: calc(100% + 4px); left: 0;
- display: grid; gap: 2px; min-width: 130px; padding: 5px;
- max-height: min(45dvh,290px,var(--retro-popup-space,290px)); overflow: auto; overscroll-behavior: contain;
+ position: absolute; z-index: 1; bottom: calc(100% + var(--retro-popup-gap)); left: 0;
+ display: grid; gap: 2px; width: max-content; min-width: 130px; max-width: calc(100vw - 16px); padding: 5px;
+ max-height: var(--retro-popup-space,100dvh); overflow: hidden auto; overscroll-behavior: contain;
  color: #121e34; background: #e7edf6; border: 1px solid #56647b;
  border-radius: 6px; box-shadow: 0 6px 22px #0008;
 }
-.retro-dropdown[data-opens-down] .retro-popup { top: calc(100% + 4px); bottom: auto; }
+.retro-dropdown[data-opens-down] .retro-popup { top: calc(100% + var(--retro-popup-gap)); bottom: auto; }
 .retro-form-list { grid-template-columns: repeat(2,minmax(0,1fr)); width: 204px; }
 .retro-popup :is(button,a) {
- display: flex; align-items: center; gap: 4px; text-align: left; font-size: 12px;
+ display: flex; align-items: center; text-align: start; font-size: 12px;
  padding: 7px 5px; background: transparent; border-radius: 3px;
 }
-.retro-popup :is(button,a) { white-space: nowrap; color: inherit; }
+.retro-popup :is(button,a) { min-width: 0; overflow-wrap: anywhere; color: inherit; }
 .retro-popup button:disabled { opacity: .55; cursor: default; }
 .retro-menu > .retro-dropdown:last-child .retro-popup { left: auto; right: 0; }
-.retro-popup button::before { content: ""; width: 12px; flex: 0 0 12px; }
+.retro-popup button[aria-pressed] { position: relative; padding-inline-end: 21px; }
 .retro-popup button[aria-pressed=true] { background: #c5d4e9; font-weight: 700; }
-.retro-popup button[aria-pressed=true]::before { content: "✓"; }
-.retro-popup button:hover { background: #d3e0f0; }
+.retro-popup button[aria-pressed=true]::after {
+ content: "✓"; position: absolute; inset-inline-end: 5px; inset-block-start: 50%; translate: 0 -50%;
+}
+@media (hover: hover) {
+ .retro-popup button:hover { background: #d3e0f0; }
+}
 .retro-display {
  display: grid; grid-template-columns: auto 1fr minmax(52px,31%); align-items: center; gap: 5px 8px;
  padding: 8px 9px 0; margin: 8px 8px 0; border-radius: 11px;
@@ -83,15 +101,20 @@
 }
 .retro-readout { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .retro-readout time { font: 30px/1 Consolas,monospace; letter-spacing: -.09em; font-variant-numeric: tabular-nums; text-shadow: 0 0 7px #8abfff8a; }
-#player-indicator { color: #a8cbff; font-size: 10px; }
+#player-indicator { display: inline-flex; color: #a8cbff; }
+#player-indicator .deck-icon { width: 12px; height: 12px; }
 .retro-flags { display: grid; justify-items: start; gap: 3px; font: bold 9px/1.2 Consolas,monospace; }
 .retro-flags span { padding: 2px 4px; border-radius: 2px; background: #d9e9ff; color: #182f57; }
 #player-spectrum { display: block; width: 100%; height: clamp(37px,var(--player-meter,37px),calc(100dvh - 270px)); border: solid #718dab; border-width: 0 0 1px 1px; }
 .desktop-deck #player-spectrum { height: var(--player-meter,37px); }
-#player-track { grid-column: 1 / -1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 5px 0 6px; border-top: 1px solid #819dc84d; font: 12px Consolas,monospace; letter-spacing: .055em; }
+.retro-track { grid-column: 1 / -1; min-width: 0; border-top: 1px solid #819dc84d; }
+.retro-track summary { padding: 5px 2px 6px; cursor: pointer; font: 12px/1.4 Consolas,monospace; letter-spacing: .055em; }
+#player-track { display: inline-block; max-width: calc(100% - 1.5em); vertical-align: bottom; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.retro-track[open] #player-track { white-space: normal; overflow-wrap: anywhere; }
 .retro-seek { display: flex; align-items: center; gap: 8px; margin: 7px 10px; font: 11px Consolas,monospace; }
 .retro-seek input[type=range] { height: 15px; margin: 0; min-width: 0; accent-color: #2c568f; }
 .retro-seek input[type=range] { flex: 1; }
+#player-duration { font-variant-numeric: tabular-nums; }
 .retro-seek input:disabled { opacity: .45; cursor: default; }
 .retro-deck { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 9px 8px; }
 .retro-transport { display: flex; gap: 5px; }
@@ -103,6 +126,10 @@
 .retro-transport button[data-player-command=play] { color: #1750a0; }
 .retro-transport button:disabled { opacity: .55; cursor: default; }
 .retro-transport button:not(:disabled):active { box-shadow: inset 0 2px 5px #192e55; }
+@media (prefers-reduced-motion: no-preference) {
+ .retro-transport button:not(:disabled) { scale: 1; transition: scale 150ms ease-out; }
+ .retro-transport button:not(:disabled):active { scale: .96; }
+}
 .retro-level { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0; }
 .retro-level input[type=range] { flex: 1; width: 0; min-width: 12px; margin: 0; accent-color: #2c568f; }
 .retro-level output { min-width: 3.5ch; text-align: right; font: 10px Consolas,monospace; }
@@ -115,9 +142,11 @@
  background: #203c68; color: #eefaff; box-shadow: inset 0 2px 4px #0a183d;
 }
 .retro-mini:disabled,.retro-level input:disabled { opacity: .55; cursor: default; }
-.retro-tools { display: flex; align-items: center; gap: 5px; padding: 0 9px 8px; }
-.retro-tools-space { flex: 1; }
-.retro-tools [data-player-command] { font-size: 16px; }
+.retro-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; padding: 0 9px 8px; }
+.retro-tools-group { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; max-width: 100%; }
+.retro-tools-group:last-child { margin-inline-start: auto; }
+#player-source { display: inline-flex; align-items: center; gap: 4px; }
+#player-source .deck-icon { flex: none; width: 13px; height: 13px; }
 .retro-accessory { border-top: 1px solid #8390a4; padding: 8px 10px; font: 12px/1.4 Arial,sans-serif; }
 .retro-accessory p { margin: 4px 0; }
 .retro-accessory a { text-decoration: underline; }
@@ -180,7 +209,7 @@ body.listening .retro-player, body.settings-open .retro-player[inert] { display:
 @media (max-width: 460px) {
  .retro-dropdown { position: static; }
  .retro-menu { position: relative; }
- .retro-popup { left: 8px; bottom: calc(100% + 4px); max-width: calc(100% - 16px); }
+ .retro-popup { left: 8px; bottom: calc(100% + var(--retro-popup-gap)); }
  .retro-menu > .retro-dropdown:last-child .retro-popup { left: 8px; right: auto; }
 }
 /* Glass chassis tokens. Opaque display and popovers keep the text readable over any Form. */
@@ -215,15 +244,14 @@ body.listening .retro-player, body.settings-open .retro-player[inert] { display:
 [data-glass] .retro-title:has([aria-expanded=false]) { border-radius: 18px; }
 [data-glass] .retro-title strong { display: block; letter-spacing: .1em; }
 [data-glass] .retro-title strong::before,[data-glass] .retro-title strong::after { content: none; }
-[data-glass] .retro-brand {
- width: 8px; height: 8px; margin-left: 3px; border-radius: 50%;
- background: #ff6961; box-shadow: 10px 0 #ffbd45,20px 0 #53c87e; font-size: 0;
-}
 [data-glass] .retro-menu { background: transparent; border-color: var(--glass-rim); }
 [data-glass] .retro-popup {
  color: var(--glass-ink); background: var(--glass-solid); border: 1px solid var(--glass-rim); border-radius: 10px;
 }
-[data-glass] .retro-popup button:is(:hover,[aria-pressed=true]),
+@media (hover: hover) {
+ [data-glass] .retro-popup button:hover { background: var(--glass-selected); }
+}
+[data-glass] .retro-popup button[aria-pressed=true],
 [data-glass] .retro-dropdown[open] summary { background: var(--glass-selected); }
 [data-glass] .retro-display {
  border: 1px solid var(--glass-well-edge); background: var(--glass-well); color: #f5faff; border-radius: 10px;
@@ -238,6 +266,10 @@ body.listening .retro-player, body.settings-open .retro-player[inert] { display:
 [data-glass] .retro-mini:is([aria-pressed=true],[aria-expanded=true]) { background: var(--glass-selected); color: inherit; }
 [data-glass] input[type=range] { accent-color: var(--glass-focus); }
 [data-glass] :focus-visible { outline-color: var(--glass-focus); }
+/* The compact native deck does not need the rim or elevation of the floating web player. */
+.desktop-deck .retro-player { border: 0; box-shadow: none; }
+.retro-player:not([data-glass]) .retro-popup :focus-visible { outline-color: #172743; }
+.retro-player .retro-track summary:focus-visible { outline-color: #f5faff; outline-offset: -2px; }
 .reduced-transparency .retro-player[data-glass] { background: var(--glass-solid); backdrop-filter: none; }
 @media (prefers-reduced-transparency: reduce) {
  .retro-player[data-glass] { background: var(--glass-solid); backdrop-filter: none; }

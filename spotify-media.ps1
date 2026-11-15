@@ -1,7 +1,8 @@
 param(
     [ValidateSet('status','play','pause','previous','next','stop','seek','repeat','shuffle','volume','mute')]
     [string]$Action = 'status',
-    [long]$PositionMs = 0
+    [long]$PositionMs = 0,
+    [string]$ExpectedTrackKey = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -55,7 +56,29 @@ $supported = @{
     shuffle = $controls.IsShuffleEnabled
 }
 
+function Get-SpotifyTrackKey($MediaSession, $Track, $Timeline) {
+    $tuple = @(
+        [string]$MediaSession.SourceAppUserModelId
+        [string]$Track.Title
+        [string]$Track.Artist
+        [string]$Track.AlbumTitle
+        [long]$Timeline.EndTime.Ticks
+    )
+    $bytes = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json -InputObject $tuple -Compress))
+    $hash = [Security.Cryptography.SHA256]::Create()
+    try { return [BitConverter]::ToString($hash.ComputeHash($bytes)).Replace('-', '').ToLowerInvariant() }
+    finally { $hash.Dispose() }
+}
+
 if ($Action -ne 'status') {
+    if ($Action -eq 'seek' -and $ExpectedTrackKey) {
+        $track = Wait-MediaOperation ($session.TryGetMediaPropertiesAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties])
+        $timeline = $session.GetTimelineProperties()
+        if ((Get-SpotifyTrackKey $session $track $timeline) -cne $ExpectedTrackKey) {
+            @{ available = $true; accepted = $false; reason = 'Spotify track changed' } | ConvertTo-Json -Compress
+            exit
+        }
+    }
     $accepted = $false
     if ($supported[$Action]) {
         $operation = switch ($Action) {
@@ -90,6 +113,7 @@ if ($playing -and $timeline.LastUpdatedTime.Year -gt 2000 -and $timeline.EndTime
 }
 @{
     available = $true
+    trackKey = Get-SpotifyTrackKey $session $track $timeline
     title = $track.Title
     artist = $track.Artist
     playing = $playing

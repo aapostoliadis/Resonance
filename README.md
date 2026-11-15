@@ -1,5 +1,7 @@
 # Resonance
 
+<img src="docs/media/resonance-logo.svg" alt="Resonance Harmonic Fold logo" width="72">
+
 Resonance is a local music visualizer with 13 audio-reactive Forms and a skinnable playback deck inspired by Winamp. Use it with Spotify, Apple Music, or a microphone. Preview mode lets you explore every Form without connecting an audio source.
 
 ![Resonance studio with its playback deck, spectrum, and Form picker. The preview cycles through Orbital, Waveform, and Fractal.](docs/media/studio.gif)
@@ -60,7 +62,7 @@ For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](ed
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64.exe). Opens to the frameless deck. Click **VIS** for fullscreen with **Settings** open. |
+| Windows x64 | [Harmonic Fold portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Harmonic-Fold.exe). Opens to the frameless deck. Click **Visualizer** for fullscreen with **Settings** open. |
 | macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon.zip) |
 | macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel.zip) |
 | Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android.apk) |
@@ -72,9 +74,25 @@ For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](ed
 
 ```sh
 npm ci
+npm test
 npm run build
 npm start
 ```
+
+The portable test suite covers local playback and does not require a music service or audio capture. Packaged Windows and live-provider checks run separately.
+
+### Build the Windows portable EXE
+
+Use Node.js 24 on Windows x64. Run these commands from the repository root.
+
+```sh
+npm ci
+npm ci --prefix packaging/windows
+npm run package:win
+npm run test:windows -- dist/windows/Resonance-Windows-x64.exe
+```
+
+The build writes `dist/windows/Resonance-Windows-x64.exe` and verifies the staged runtime files. The Windows smoke test launches that EXE and uses local test audio and a simulated Spotify session.
 
 | Path | Role |
 | --- | --- |

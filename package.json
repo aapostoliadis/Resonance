@@ -5,7 +5,10 @@
   "description": "Local Spotify audio-reactive visual studio with Three.js and Canvas fallback",
   "scripts": {
     "start": "node server.cjs",
-    "build": "node build-graphics.cjs"
+    "build": "node build-graphics.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "package:win": "node packaging/windows/build.cjs",
+    "test:windows": "node tests/windows-smoke.cjs"
   },
   "dependencies": {
     "gsap": "3.15.1",

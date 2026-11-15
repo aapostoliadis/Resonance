@@ -1,0 +1,12 @@
+{
+  "electronVersion": "45.3.2",
+  "appId": "local.resonance.visualizer",
+  "asar": false,
+  "npmRebuild": false,
+  "win": {
+    "target": [{"target": "portable", "arch": ["x64"]}],
+    "signExecutable": false,
+    "artifactName": "Resonance-Windows-x64.exe"
+  },
+  "portable": {"unpackDirName": true}
+}

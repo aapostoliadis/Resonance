@@ -128,6 +128,7 @@ const applePlayback = (() => {
   const duration = Number(player.currentPlaybackDuration);
   const position = Number(player.currentPlaybackTime);
   return {
+   trackKey:item?.id || item?.attributes?.playParams?.id || JSON.stringify([artist,title,duration || 0]),
    title:[artist,title].filter(Boolean).join(' · ') || 'Apple Music',
    playing:Boolean(player.isPlaying),
    durationMs:Number.isFinite(duration)&&duration>0 ? duration*1000 : 0,
@@ -135,11 +136,12 @@ const applePlayback = (() => {
   };
  }
 
- async function command(action,ms) {
+ async function command(action,ms,expectedTrackKey) {
   if (!active || busy) return;
   if (action === 'seek') {
-   const duration = snapshot().durationMs;
-   if (duration > 0) await player.seekToTime(Math.max(0,Math.min(duration,ms))/1000);
+   const {durationMs,trackKey} = snapshot();
+   if (expectedTrackKey !== undefined && expectedTrackKey !== trackKey) return false;
+   if (durationMs > 0) await player.seekToTime(Math.max(0,Math.min(durationMs,ms))/1000);
   } else if (action === 'play') await player.play();
   else if (action === 'pause') await player.pause();
  }

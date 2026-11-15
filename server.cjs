@@ -11,12 +11,14 @@ files['/apple-music.js']='apple-music.js';
 let pendingStatus;
 let commandInProgress = false;
 
-function readSpotify(action, position) {
+function readSpotify(action, position, expectedTrackKey) {
  return new Promise(resolve=>{
   if(process.platform!=='win32')return resolve({available:false,reason:'Spotify transport requires Windows'});
   const shell=path.join(process.env.SystemRoot||'C:\\Windows','System32','WindowsPowerShell','v1.0','powershell.exe');
   const script=path.join(__dirname,'spotify-media.ps1');
-  execFile(shell,['-NoProfile','-NonInteractive','-File',script,'-Action',action,'-PositionMs',String(position)],{windowsHide:true,timeout:4500,maxBuffer:16384},(error,stdout)=>{
+  const args=['-NoProfile','-NonInteractive','-File',script,'-Action',action,'-PositionMs',String(position)];
+  if (expectedTrackKey) args.push('-ExpectedTrackKey',expectedTrackKey);
+  execFile(shell,args,{windowsHide:true,timeout:4500,maxBuffer:16384},(error,stdout)=>{
    if(!error){
     try{return resolve(JSON.parse(stdout));}catch{}
    }
@@ -46,13 +48,17 @@ async function spotify(req,res,url,host) {
  }
  const action=url.searchParams.get('action');
  const position=Number(url.searchParams.get('ms')??0);
+ const expectedTrackKey=url.searchParams.get('trackKey');
  if(!commands.has(action)||!Number.isInteger(position)||position<0||position>(commandLimits[action]??0)){
   return json(res,400,{reason:'Invalid playback command'});
+ }
+ if(expectedTrackKey!==null&&(action!=='seek'||!(/^[a-f0-9]{64}$/).test(expectedTrackKey))){
+  return json(res,400,{reason:'Invalid playback track key'});
  }
  if(commandInProgress)return json(res,409,{reason:'A playback command is already running'});
  commandInProgress=true;
  try {
-  const result=await readSpotify(action,position);
+  const result=await readSpotify(action,position,expectedTrackKey);
   return json(res,result.accepted?200:409,result);
  } finally {
   pendingStatus=null;
@@ -60,11 +66,12 @@ async function spotify(req,res,url,host) {
  }
 }
 
-function startServer(port=Number(process.env.PORT || 4387)){
+function startServer(port=Number(process.env.PORT || 4387),localAudio){
  const server=http.createServer((req,res)=>{
  const host='127.0.0.1:'+server.address().port;
  const url=new URL(req.url,'http://localhost');
  const pathname=url.pathname;
+ if(localAudio&&pathname.startsWith('/local-audio/'))return void localAudio.serve(req,res,url,host);
  if(pathname==='/api/spotify')return void spotify(req,res,url,host);
  if(pathname==='/api/apple-music'){
   if(req.method!=='GET'||req.headers.host!==host||req.headers['x-resonance-player']!=='1'||

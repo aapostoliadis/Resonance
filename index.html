@@ -9,7 +9,7 @@
 <body>
 <canvas id="visual" aria-label="Animated audio visualization"></canvas>
 <div class="vignette"></div>
-<header><a href="./" class="brand" aria-label="Resonance home"><span class="brand-symbol">◉</span> resonance<span class="version">/ 3D</span></a><div class="header-right"><span class="local">LOCAL AUDIO ENGINE</span><button id="listening" class="listen-entry">Listen ↗</button><button id="help" class="icon" aria-label="How to connect audio">?</button><button id="zoom-out" class="icon" type="button" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/></svg></button><button id="zoom-reset" class="zoom-value" type="button" aria-label="Reset zoom to 100%" title="Reset zoom (0)">100%</button><button id="zoom-in" class="icon" type="button" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/><path d="M8 6v4"/></svg></button><button id="framing-toggle" class="view-mode" type="button" aria-label="Fill viewport" aria-pressed="false">Fit</button><button id="fullscreen" class="icon" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></header>
+<header><a href="./" class="brand" aria-label="Resonance home"><svg class="resonance-mark" width="22" height="22" aria-hidden="true" focusable="false"><use href="#resonance-mark"/></svg> resonance<span class="version">/ 3D</span></a><div class="header-right"><span class="local">LOCAL AUDIO ENGINE</span><button id="listening" class="listen-entry">Listen ↗</button><button id="help" class="icon" aria-label="How to connect audio">?</button><button id="zoom-out" class="icon" type="button" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/></svg></button><button id="zoom-reset" class="zoom-value" type="button" aria-label="Reset zoom to 100%" title="Reset zoom (0)">100%</button><button id="zoom-in" class="icon" type="button" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5M6 8h4"/><path d="M8 6v4"/></svg></button><button id="framing-toggle" class="view-mode" type="button" aria-label="Fill viewport" aria-pressed="false">Fit</button><button id="fullscreen" class="icon" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></header>
 <main>
   <section class="intro"><div class="eyebrow"><span class="dot"></span> MUSIC, MADE VISIBLE</div><h1>Find your<br><span class="headline-accent">frequency.</span></h1><p>A living canvas for whatever<br>you’re listening to.</p></section>
   <div class="stage-label"><span id="mode-number">01</span><span id="mode-caption">ORBITAL FIELD</span><span class="hairline"></span><span>REAL-TIME GENERATIVE VISUALS</span></div>
@@ -137,11 +137,37 @@
 <button id="dock-next" type="button" aria-label="Next Form" title="Next Form">›</button>
 <button id="mobile-settings" type="button" aria-controls="visual-settings" aria-expanded="false">Settings</button><button id="stage" type="button">Stage</button></div><div class="audio-actions"><button id="connect" class="primary">Connect audio <span>↗</span></button><a class="spotify" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6 9c4-1.2 8-1 12 1M7 12.5c3-1 7-.7 10 1M8 16c3-.6 5-.4 8 .7" fill="none" stroke="#0b100b" stroke-width="1.6" stroke-linecap="round"/></svg>Open Spotify ↗</a></div></section>
   <section class="retro-player" aria-label="Spotify playback dock">
-   <div class="retro-title"><span class="retro-brand" aria-hidden="true">ϟ</span><strong>RESONANCE</strong><button id="player-collapse" type="button" aria-expanded="true" aria-controls="player-face" aria-label="Collapse player">−</button><button id="player-resize" type="button" aria-label="Resize player" aria-describedby="player-resize-help" title="Drag to resize · Double-click to reset"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M9 3h4v4M7 13H3V9M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+   <svg class="deck-icon-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="resonance-mark" viewBox="0 0 128 128">
+     <rect width="128" height="128" rx="28" fill="#102631"/>
+     <path d="M22 83C39 85 43 55 62 38C76 26 94 32 105 46" fill="none" stroke="#A8E4DD" stroke-width="7" stroke-linecap="round"/>
+     <path d="M22 83C41 85 51 71 64 60C77 50 93 54 105 68" fill="none" stroke="#65AFA9" stroke-width="6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="deck-play" viewBox="0 0 16 16"><path fill="currentColor" stroke="none" d="M5 2.8 13.5 8 5 13.2Z"/></symbol>
+    <symbol id="deck-pause" viewBox="0 0 16 16"><path stroke-width="2.6" d="M5.3 3.5v9m5.4-9v9"/></symbol>
+    <symbol id="deck-stop" viewBox="0 0 16 16"><rect x="3.3" y="3.3" width="9.4" height="9.4" rx="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="deck-previous" viewBox="0 0 16 16"><path d="M3 3.5v9"/><path fill="currentColor" stroke="none" d="M12.8 2.8 5.4 8l7.4 5.2Z"/></symbol>
+    <symbol id="deck-next" viewBox="0 0 16 16"><path d="M13 3.5v9"/><path fill="currentColor" stroke="none" d="m3.2 2.8 7.4 5.2-7.4 5.2Z"/></symbol>
+    <symbol id="deck-volume" viewBox="0 0 16 16"><path d="M2 6h2.7L8 3.3v9.4L4.7 10H2zM10.5 6a3 3 0 0 1 0 4M12.5 4a5.3 5.3 0 0 1 0 8"/></symbol>
+    <symbol id="deck-muted" viewBox="0 0 16 16"><path d="M2 6h2.7L8 3.3v9.4L4.7 10H2zM10.7 6.4l3.2 3.2m0-3.2-3.2 3.2"/></symbol>
+    <symbol id="deck-repeat" viewBox="0 0 16 16"><path d="M2.4 7.1V6a2 2 0 0 1 2-2h8.9m-2.2-2 2.2 2-2.2 2m2.5 2.9V10a2 2 0 0 1-2 2H2.7m2.2-2-2.2 2 2.2 2"/></symbol>
+    <symbol id="deck-one" viewBox="0 0 16 16"><path stroke-width="1.2" d="m7.3 7.5 1-.7v2.7"/></symbol>
+    <symbol id="deck-shuffle" viewBox="0 0 16 16"><path d="M2 4h1.7c3.2 0 5 8 8.2 8H14m-2-2 2 2-2 2M2 12h1.7c1.2 0 2.2-1.1 3.1-2.5m2.4-3c.8-1.4 1.7-2.5 2.7-2.5H14m-2-2 2 2-2 2"/></symbol>
+    <symbol id="deck-queue" viewBox="0 0 16 16"><path d="M2 4h11M2 8h7m-7 4h7"/><path fill="currentColor" stroke="none" d="m11 8 3.5 2.4-3.5 2.4Z"/></symbol>
+    <symbol id="deck-library" viewBox="0 0 16 16"><path d="M2.5 3.5h7.4v9.1H2.5zm10.7 0v9.1M5 6.2v3.7m2.3-3.7v3.7"/></symbol>
+    <symbol id="deck-collapse" viewBox="0 0 16 16"><path d="m3.8 9.8 4.2-4.2 4.2 4.2"/></symbol>
+    <symbol id="deck-expand" viewBox="0 0 16 16"><path d="m3.8 6.2 4.2 4.2 4.2-4.2"/></symbol>
+    <symbol id="deck-resize" viewBox="0 0 16 16"><path d="M9.5 2.5h4v4m0-4L9 7M6.5 13.5h-4v-4m0 4L7 9"/></symbol>
+    <symbol id="deck-minimize" viewBox="0 0 16 16"><path d="M3.5 10h9"/></symbol>
+    <symbol id="deck-close" viewBox="0 0 16 16"><path d="m4 4 8 8m0-8-8 8"/></symbol>
+    <symbol id="deck-note" viewBox="0 0 16 16"><path d="M6 11V4l6-1.5V9M6 11c0 .9-.9 1.7-2 1.7S2.3 12.1 2.3 11.3s.9-1.6 2-1.6S6 10.2 6 11Zm6-2c0 .9-.9 1.7-2 1.7S8.3 10 8.3 9.3s.9-1.6 2-1.6S12 8.2 12 9Z"/></symbol>
+   </svg>
+   <div class="retro-title"><span class="retro-brand"><svg class="resonance-mark" width="22" height="22" aria-hidden="true" focusable="false"><use href="#resonance-mark"/></svg></span><strong>RESONANCE</strong><button id="player-collapse" type="button" aria-expanded="true" aria-controls="player-face" class="deck-title-control" aria-label="Collapse player"><svg class="deck-icon" aria-hidden="true" focusable="false"><use class="deck-icon-collapse" href="#deck-collapse"/><use class="deck-icon-expand" href="#deck-expand"/></svg></button><button id="player-resize" type="button" aria-label="Resize player" aria-describedby="player-resize-help" title="Drag to resize · Double-click to reset"><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-resize"/></svg></button></div>
    <span id="player-resize-help" class="visually-hidden">Drag or use the arrow keys to resize. Press Home to reset.</span>
    <div id="player-face">
     <div class="retro-menu">
-     <details class="retro-dropdown"><summary>File</summary><div class="retro-popup">
+     <details class="retro-dropdown" id="player-file-menu"><summary>File</summary><div class="retro-popup">
+      <button id="player-open-file" type="button">Open audio file…</button>
       <a href="spotify:">Open Spotify desktop ↗</a>
       <button id="player-apple-audio" type="button">Connect Apple Music…</button>
       <button id="player-apple-playback" type="button">Apple Music playback…</button>
@@ -180,35 +206,38 @@
      </details>
     </div>
     <div class="retro-display">
-     <div class="retro-readout"><span id="player-indicator" aria-hidden="true">■</span><time id="player-time">–:––</time></div>
+     <div class="retro-readout"><span id="player-indicator" aria-hidden="true"><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-stop"/></svg></span><time id="player-time">–:––</time></div>
      <div class="retro-flags"><span id="player-link-state">SPOTIFY DESKTOP</span><span id="player-signal-state">PREVIEW MODE</span><span id="player-sample-rate" hidden></span></div>
      <canvas id="player-spectrum" width="216" height="62" aria-hidden="true"></canvas>
-     <div id="player-track" title="Play a track in Spotify desktop">Play a track in Spotify desktop</div>
+     <details class="retro-track"><summary><span id="player-track">Play a track in Spotify desktop</span></summary></details>
     </div>
     <div class="retro-seek"><input id="player-seek" type="range" aria-label="Seek in Spotify track" min="0" max="1" value="0" disabled><time id="player-duration">–:––</time></div>
     <div class="retro-deck">
      <div class="retro-transport" role="group" aria-label="Spotify playback">
-      <button type="button" data-player-command="previous" aria-label="Previous track" title="Previous track" disabled>◀◀</button>
-      <button type="button" data-player-command="play" aria-label="Play Spotify" title="Play Spotify" disabled>▶</button>
-      <button type="button" data-player-command="pause" aria-label="Pause Spotify" title="Pause Spotify" disabled>Ⅱ</button>
-      <button type="button" data-player-command="stop" aria-label="Stop playback" title="Stop playback" disabled>■</button>
-      <button type="button" data-player-command="next" aria-label="Next track" title="Next track" disabled>▶▶</button>
+      <button type="button" data-player-command="previous" aria-label="Previous track" title="Previous track" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-previous"/></svg></button>
+      <button type="button" data-player-command="play" aria-label="Play Spotify" title="Play Spotify" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-play"/></svg></button>
+      <button type="button" data-player-command="pause" aria-label="Pause Spotify" title="Pause Spotify" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-pause"/></svg></button>
+      <button type="button" data-player-command="stop" aria-label="Stop playback" title="Stop playback" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-stop"/></svg></button>
+      <button type="button" data-player-command="next" aria-label="Next track" title="Next track" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-next"/></svg></button>
      </div>
      <div class="retro-level">
-      <button class="retro-mini" type="button" data-player-command="mute" aria-label="Mute Spotify" aria-pressed="false" title="Mute Spotify on this PC" disabled>◖))</button>
+      <button class="retro-mini" type="button" data-player-command="mute" aria-label="Mute Spotify" aria-pressed="false" title="Mute Spotify on this PC" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use class="deck-icon-volume" href="#deck-volume"/><use class="deck-icon-muted" href="#deck-muted"/></svg></button>
       <input id="player-volume" type="range" aria-label="Spotify volume on this PC" min="0" max="100" value="0" disabled>
       <output id="player-volume-value" for="player-volume">–</output>
      </div>
     </div>
     <div class="retro-tools" role="group" aria-label="Playback modes and shortcuts">
-     <button class="retro-mini" type="button" data-player-command="repeat" aria-label="Repeat: off" aria-pressed="false" title="Repeat: off" disabled>↻</button>
-     <button class="retro-mini" type="button" data-player-command="shuffle" aria-label="Shuffle" aria-pressed="false" title="Shuffle" disabled>⇄</button>
-     <button class="retro-mini" id="player-visualize" type="button" aria-label="Open visualizations" title="Open visualizations">VIS</button>
-     <span class="retro-tools-space"></span>
-     <button class="retro-mini" id="player-source" type="button" aria-label="Audio source" title="Audio source">⏏</button>
-     <button class="retro-mini" id="player-queue" type="button" aria-label="Spotify Play Queue" title="Spotify Play Queue" aria-controls="player-accessory" aria-expanded="false">PL</button>
-     <button class="retro-mini" id="player-library" type="button" aria-label="Spotify library" title="Spotify library" aria-controls="player-accessory" aria-expanded="false">ML</button>
-     <button class="retro-mini" id="player-config" type="button" aria-label="Visualizer settings" title="Visualizer settings">CONFIG</button>
+     <div class="retro-tools-group">
+      <button class="retro-mini" type="button" data-player-command="repeat" aria-label="Repeat: off" aria-pressed="false" title="Repeat: off" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-repeat"/><use class="deck-icon-repeat-one" href="#deck-one"/></svg></button>
+      <button class="retro-mini" type="button" data-player-command="shuffle" aria-label="Shuffle" aria-pressed="false" title="Shuffle" disabled><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-shuffle"/></svg></button>
+      <button class="retro-mini" id="player-visualize" type="button" aria-label="Open visualizer" title="Open visualizer">VISUALIZER</button>
+     </div>
+     <div class="retro-tools-group">
+      <button class="retro-mini" id="player-source" type="button" aria-label="Choose audio source" title="Choose audio source"><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-note"/></svg><span>SOURCE</span></button>
+      <button class="retro-mini" id="player-queue" type="button" aria-label="Spotify Play Queue" title="Spotify Play Queue" aria-controls="player-accessory" aria-expanded="false"><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-queue"/></svg></button>
+      <button class="retro-mini" id="player-library" type="button" aria-label="Spotify library" title="Spotify library" aria-controls="player-accessory" aria-expanded="false"><svg class="deck-icon" aria-hidden="true" focusable="false"><use href="#deck-library"/></svg></button>
+      <button class="retro-mini" id="player-config" type="button" aria-label="Visualizer settings" title="Visualizer settings">CONFIG</button>
+     </div>
     </div>
     <div id="player-accessory" class="retro-accessory" hidden>
      <strong id="player-accessory-title"></strong>
@@ -237,4 +266,5 @@
  <div class="alternatives"><button type="button" id="apple-external">Use an Apple Music tab instead</button></div>
 </dialog>
 <div id="toast" role="status" aria-live="polite"></div>
+<input id="player-local-file" type="file" accept="audio/*,.mp3,.wav,.flac,.ogg,.opus,.m4a,.aac,.aif,.aiff,.wma" hidden>
 </body></html>

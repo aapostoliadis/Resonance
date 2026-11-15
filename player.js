@@ -7,15 +7,21 @@
  const seek = get('player-seek');
  const volume = get('player-volume');
  const time = get('player-time');
+ const playbackIndicator = get('player-indicator').querySelector('use');
  const spectrum = get('player-spectrum');
  const context = spectrum.getContext('2d');
  const feedback = get('player-feedback');
+ const trackTitle = get('player-track');
  const headers = {'X-Resonance-Player':'1'};
  let session = null;
  let token = '';
  let sampledAt = 0;
+ let renderedFile=null;
  let busy = false;
  let dragging = false;
+ let pendingSeek = null;
+ let seekDraining = false;
+ let seekTarget = null;
  let adjustingVolume = false;
  let remaining = false;
  let scope = false;
@@ -30,7 +36,7 @@
  let edgeAppleRequestPending = false;
  let edgeAppleVersion = 0;
 
- function edgeAppleRequest(action,seconds) {
+ function edgeAppleRequest(action,seconds,target = edgeAppleTarget) {
   return new Promise(resolve => {
    const id = crypto.randomUUID();
    const listener = event => {
@@ -45,7 +51,7 @@
    }
    const timer = setTimeout(() => finish(null),2500);
    window.addEventListener('message',listener);
-   window.postMessage({type:'resonance-deck-request',id,action,seconds,target:edgeAppleTarget},location.origin);
+   window.postMessage({type:'resonance-deck-request',id,action,seconds,target},location.origin);
   });
  }
 
@@ -64,7 +70,10 @@
   try {
    const result = await edgeAppleRequest('status');
    if (version === edgeAppleVersion && !appleCommandPending &&
-    state.source === 'shared' && musicProvider === 'apple') acceptEdgeApple(result);
+    state.source === 'shared' && musicProvider === 'apple') {
+    acceptEdgeApple(result);
+    syncSeekTarget();
+   }
   } finally {edgeAppleRequestPending = false;}
  }
  const skinStorageKey = 'resonance.playerSkin.v1';
@@ -104,9 +113,12 @@
  function placeMenu(menu) {
   const anchor = matchMedia('(max-width: 460px)').matches ? menu.parentElement : menu;
   const bounds = anchor.getBoundingClientRect();
-  const above = Math.max(0,bounds.top - 12);
-  const below = Math.max(0,innerHeight - bounds.bottom - 12);
-  const downward = above < Math.min(290,innerHeight * .45) && below > above;
+  const popup = menu.querySelector('.retro-popup');
+  const gap = parseFloat(getComputedStyle(popup).getPropertyValue('--retro-popup-gap'));
+  const above = Math.max(0,bounds.top - gap);
+  const below = Math.max(0,innerHeight - bounds.bottom - gap);
+  const contentHeight = popup.scrollHeight + popup.offsetHeight - popup.clientHeight;
+  const downward = contentHeight > above && below > above;
   menu.toggleAttribute('data-opens-down',downward);
   menu.style.setProperty('--retro-popup-space',(downward ? below : above) + 'px');
  }
@@ -178,36 +190,48 @@
   feedback.hidden = !text;
  }
 
+ function showTrackTitle(title) {
+  if (trackTitle.textContent === title) return;
+  trackTitle.closest('details').open = false;
+  trackTitle.textContent = title;
+ }
+
  function refreshControls() {
+  const audio=localTrack?.audio;
   const localVolume = Number.isFinite(session?.volume);
   for (const button of buttons) {
    const action = button.dataset.playerCommand;
-   if (appleCapture) {
+   if(audio){
+    button.disabled=action==='play'?!audio.paused:action==='pause'?audio.paused:!['stop','repeat','mute'].includes(action);
+   }else if (appleCapture) {
     const supported = appleTrack && !appleTrack.edge && (action === 'play' ? !appleTrack.playing : action === 'pause' && appleTrack.playing);
     button.disabled = appleCommandPending || !supported;
    } else {
     button.disabled = busy || !(action === 'mute' ? localVolume : session?.supported?.[action]);
    }
    if (action === 'repeat') {
-    const repeat = appleCapture ? undefined : session?.repeat;
+    const repeat = audio ? (audio.loop?2:0) : appleCapture ? undefined : session?.repeat;
     const label = 'Repeat: ' + (['off','all','one'][repeat] ?? 'unavailable');
     button.title = label + (button.disabled ? '' : ' (click to cycle)');
     button.setAttribute('aria-label',label);
     button.setAttribute('aria-pressed',String(repeat > 0));
-    button.textContent = button.classList.contains('retro-mini') ? (repeat === 2 ? '↻¹' : '↻') : label;
+    if (button.classList.contains('retro-mini')) button.toggleAttribute('data-repeat-one',repeat === 2);
+    else button.textContent = label;
    }
    if (action === 'shuffle' || action === 'mute') {
-    button.setAttribute('aria-pressed',String(!appleCapture && Boolean(session?.[action === 'mute' ? 'muted' : 'shuffle'])));
+    const pressed=audio ? action==='mute'&&audio.muted : !appleCapture&&Boolean(session?.[action==='mute'?'muted':'shuffle']);
+    button.setAttribute('aria-pressed',String(pressed));
    }
   }
-  seek.disabled = appleCapture
-   ? appleCommandPending || !(appleTrack?.durationMs > 0) || !Number.isFinite(appleTrack.positionMs) ||
+  seek.disabled = audio ? !Number.isFinite(audio.duration) : appleCapture
+   ? (appleCommandPending && !seekDraining) || !(appleTrack?.durationMs > 0) || !Number.isFinite(appleTrack.positionMs) ||
     (appleTrack.edge && !appleTrack.seekable)
-   : busy || !session?.supported?.seek;
-  volume.disabled = appleCapture || busy || !localVolume;
+   : (busy && !seekDraining) || !session?.supported?.seek;
+  volume.disabled = !audio&&(appleCapture || busy || !localVolume);
   if (!adjustingVolume) {
-   volume.value = appleCapture ? 0 : session?.volume ?? 0;
-   get('player-volume-value').textContent = localVolume && !appleCapture ? session.volume + '%' : '–';
+   const level=audio?Math.round(audio.volume*100):appleCapture?null:session?.volume;
+   volume.value=level??0;
+   get('player-volume-value').textContent=Number.isFinite(level)?level+'%':'–';
   }
  }
 
@@ -226,47 +250,86 @@
    session = {available:false,reason:'Start the updated Resonance server'};
    token = '';
   }
+  syncSeekTarget();
   renderTransport();
+  renderSeek();
  }
 
  function renderTransport() {
+  if(localTrack){
+   const {audio,name}=localTrack;
+   showTrackTitle(name);
+   get('player-link-state').textContent='LOCAL FILE';
+   get('player-duration').textContent=formatTime(audio.duration*1000);
+   playbackIndicator.setAttribute('href',audio.paused ? '#deck-pause' : '#deck-play');
+   seek.max=Number.isFinite(audio.duration)?Math.max(1,Math.floor(audio.duration*1000)):1;
+   refreshControls();
+   return;
+  }
   if (appleCapture) {
    const text = appleTrack?.title || 'Control playback in Apple Music';
-   get('player-track').textContent = text;
-   get('player-track').title = text;
+   showTrackTitle(text);
    get('player-link-state').textContent = 'APPLE MUSIC';
    get('player-duration').textContent = formatTime(appleTrack?.durationMs || undefined);
-   get('player-indicator').textContent = appleTrack ? (appleTrack.playing ? '▶' : 'Ⅱ') : '♫';
+   playbackIndicator.setAttribute('href',appleTrack ? (appleTrack.playing ? '#deck-play' : '#deck-pause') : '#deck-note');
    seek.max = Math.max(1,appleTrack?.durationMs || 0);
    refreshControls();
    return;
   }
   if (!session) return;
   const title = session.available ? [session.artist,session.title].filter(Boolean).join(' · ') || 'Spotify desktop connected' : session.reason;
-  get('player-track').textContent = title;
-  get('player-track').title = title;
+  showTrackTitle(title);
   get('player-link-state').textContent = session.available ? 'SPOTIFY CONNECTED' : 'SPOTIFY DESKTOP';
   get('player-duration').textContent = formatTime(session.durationMs || undefined);
-  get('player-indicator').textContent = session.playing ? '▶' : session.available ? 'Ⅱ' : '■';
+  playbackIndicator.setAttribute('href',session.playing ? '#deck-play' : session.available ? '#deck-pause' : '#deck-stop');
   seek.max = Math.max(1,session.durationMs || 0);
   refreshControls();
  }
 
- async function command(action, ms = 0) {
-  if (appleCapture) {
-   if (!appleTrack || appleCommandPending || !['seek','play','pause'].includes(action)) return;
+ async function command(action, ms = 0, request = null) {
+  const ownsSelection = () => !request || syncSeekTarget() === request.target;
+  if (!ownsSelection()) return;
+  if(localTrack){
+   const {audio,context}=localTrack;
+   showFeedback('');
+   try{
+    switch(action){
+     case 'play': await context.resume(); await audio.play(); break;
+     case 'pause': audio.pause(); break;
+     case 'stop': audio.pause(); audio.currentTime=0; break;
+     case 'seek': audio.currentTime=ms/1000; break;
+     case 'volume': audio.volume=ms/100; break;
+     case 'mute': audio.muted=!audio.muted; break;
+     case 'repeat': audio.loop=!audio.loop; break;
+    }
+   }catch{showFeedback('Couldn’t apply that control. Try again or reopen the audio file.');}
+   renderTransport();
+   renderSeek();
+   return;
+  }
+  const forApple = request ? request.target.provider !== 'spotify' : appleCapture;
+  const seekError = forApple
+   ? 'Couldn’t seek. Try again or seek in Apple Music.'
+   : 'Couldn’t seek. Try again or seek in Spotify.';
+  if (forApple) {
+   const playingTrack = request ? request.target : appleTrack;
+   if (!playingTrack || appleCommandPending || !['seek','play','pause'].includes(action)) return;
    appleCommandPending = true;
    refreshControls();
    showFeedback('');
    try {
-    if (appleTrack.edge) {
+    if (playingTrack.edge || playingTrack.provider === 'edge-apple') {
      edgeAppleVersion++;
-     const result = await edgeAppleRequest('seek',ms/1000);
+     const result = await edgeAppleRequest('seek',ms/1000,request?.target.edgeTarget);
+     if (!ownsSelection()) return;
      if (result?.track) acceptEdgeApple(result);
-     else showFeedback(result?.error || 'Edge did not confirm the seek.');
-    } else await applePlayback.command(action,ms);
+     else showFeedback(seekError);
+    } else {
+     const applied = await applePlayback.command(action,ms,request?.target.key);
+     if (applied === false && ownsSelection()) showFeedback(seekError);
+    }
    }
-   catch { showFeedback('Apple Music could not apply that control.'); }
+   catch { if (ownsSelection()) showFeedback(action === 'seek' ? seekError : 'Apple Music could not apply that control.'); }
    finally { appleCommandPending = false;refreshControls(); }
    return;
   }
@@ -278,13 +341,14 @@
   let accepted = false;
   try {
    const params = new URLSearchParams({action,ms});
+   if (request?.target.spotifyKey) params.set('trackKey',request.target.spotifyKey);
    const response = await fetch('/api/spotify?' + params,{method:'POST',headers:{...headers,'X-Resonance-Token':token}});
    accepted = response.ok;
-   if (!accepted) showFeedback('Spotify could not apply that control.');
+   if (!accepted && ownsSelection()) showFeedback(action === 'seek' ? seekError : 'Spotify could not apply that control.');
   } catch {
-   showFeedback('Spotify controls are temporarily unavailable.');
+   if (ownsSelection()) showFeedback(action === 'seek' ? seekError : 'Spotify controls are temporarily unavailable.');
   } finally {
-   await poll();
+   if (readSeekTarget().provider === 'spotify') await poll();
    if (accepted && ['repeat','shuffle','volume','mute'].includes(action)) {
     const actual = session?.[action === 'mute' ? 'muted' : action];
     if (actual == null || Number(actual) !== ms) showFeedback('Spotify did not confirm that change.');
@@ -294,48 +358,104 @@
   }
  }
 
+ function readSeekTarget() {
+  if (localTrack) return {provider:'file',key:localTrack,canSeek:true};
+  const musicKit = applePlayback.snapshot();
+  if (musicKit) return {provider:'musickit',key:musicKit.trackKey,canSeek:musicKit.durationMs > 0};
+  if (state.source === 'shared' && musicProvider === 'apple') {
+   const edgeTarget = edgeAppleTarget && {...edgeAppleTarget};
+   return {provider:'edge-apple',key:JSON.stringify(edgeTarget),edgeTarget,canSeek:Boolean(edgeTarget && edgeAppleTrack?.seekable)};
+  }
+  const spotifyKey = session?.trackKey;
+  return {
+   provider:'spotify',key:session?.available && (spotifyKey ?? JSON.stringify([session.title,session.artist,session.durationMs])),
+   spotifyKey,canSeek:Boolean(session?.supported?.seek)
+  };
+ }
+
+ function syncSeekTarget() {
+  const current = readSeekTarget();
+  if (seekTarget?.provider !== current.provider || seekTarget.key !== current.key) {
+   seekTarget = current;
+   pendingSeek = null;
+   dragging = false;
+  } else seekTarget.canSeek = current.canSeek;
+  return seekTarget;
+ }
+
+ async function seekTo(position) {
+  const target = syncSeekTarget();
+  if (!target.canSeek) return;
+  if (target.provider === 'file') {await command('seek',position);return;}
+  pendingSeek = {position,target};
+  renderSeek();
+  if (seekDraining) return;
+  seekDraining = true;
+  try {
+   while (pendingSeek) {
+    const current = syncSeekTarget();
+    const request = pendingSeek;
+    if (!request || !current.canSeek) {pendingSeek = null;break;}
+    await command('seek',request.position,request);
+    if (pendingSeek === request) pendingSeek = null;
+   }
+  } finally {
+   seekDraining = false;
+   refreshControls();
+   renderSeek();
+  }
+ }
+
+ function renderSeek() {
+  const position = localTrack ? localTrack.audio.currentTime*1000 : appleCapture ? (appleTrack?.edge && appleTrack.playing
+   ? Math.min(appleTrack.durationMs,appleTrack.positionMs+performance.now()-edgeAppleSampledAt)
+   : appleTrack?.positionMs) : !session?.available || !session.durationMs ? undefined :
+   Math.max(0,Math.min(session.durationMs,session.positionMs + (session.playing ? performance.now() - sampledAt : 0)));
+  const requested = pendingSeek?.position;
+  const shownPosition = dragging ? Number(seek.value) : requested ?? position;
+  if (!dragging) seek.value = shownPosition ?? 0;
+  time.textContent = remaining && Number.isFinite(shownPosition) ?
+   '−' + formatTime(Math.max(0,(localTrack ? localTrack.audio.duration*1000 : appleCapture ? appleTrack?.durationMs : session?.durationMs) - shownPosition)) : formatTime(shownPosition);
+ }
+
  function update() {
   player.inert = document.body.classList.contains('listening') ||
    (mobileSettings.matches && document.body.classList.contains('settings-open'));
   const source = get('source-state').textContent;
-  const nextTrack = applePlayback.snapshot() ||
+  const nextTrack = localTrack ? null : applePlayback.snapshot() ||
    (state.source === 'shared' && musicProvider === 'apple' ? edgeAppleTrack : null);
   const transportChanged = nextTrack?.title !== appleTrack?.title || nextTrack?.playing !== appleTrack?.playing ||
    nextTrack?.durationMs !== appleTrack?.durationMs ||
    nextTrack?.seekable !== appleTrack?.seekable ||
    Number.isFinite(nextTrack?.positionMs) !== Number.isFinite(appleTrack?.positionMs);
   appleTrack = nextTrack;
+  syncSeekTarget();
   const nextAppleCapture = Boolean(appleTrack) || (state.source === 'shared' && musicProvider === 'apple');
-  if (nextAppleCapture !== appleCapture) {
+  if (nextAppleCapture !== appleCapture || renderedFile !== localTrack) {
+   renderedFile=localTrack;
    appleCapture = nextAppleCapture;
    if (!appleCapture) {
     edgeAppleVersion++;
     acceptEdgeApple(null);
    }
-   get('player-queue').hidden = get('player-library').hidden = appleCapture;
+   get('player-queue').hidden = get('player-library').hidden = appleCapture||!!localTrack;
    get('player-queue').setAttribute('aria-expanded','false');
    get('player-library').setAttribute('aria-expanded','false');
    get('player-accessory').hidden = true;
    showFeedback('');
-   seek.setAttribute('aria-label','Seek in '+(appleCapture?'Apple Music':'Spotify')+' track');
+   seek.setAttribute('aria-label',localTrack?'Seek in audio file':'Seek in '+(appleCapture?'Apple Music':'Spotify')+' track');
+   volume.setAttribute('aria-label',localTrack?'Audio file volume':'Spotify volume on this PC');
    for (const button of buttons.filter(button => ['play','pause'].includes(button.dataset.playerCommand) && button.hasAttribute('aria-label'))) {
     const action = button.dataset.playerCommand === 'play' ? 'Play' : 'Pause';
-    button.title = action+' '+(appleCapture?'Apple Music':'Spotify');
+    button.title = action+' '+(localTrack?'audio file':appleCapture?'Apple Music':'Spotify');
     button.setAttribute('aria-label',button.title);
    }
    renderTransport();
   } else if (appleCapture && transportChanged) renderTransport();
   get('player-signal-state').textContent = source;
-  get('player-audio').textContent = state.source === 'demo' ? 'Connect audio' : 'Disconnect audio';
+  get('player-audio').textContent = localTrack?'Close audio file':state.source === 'demo'?'Connect audio':'Disconnect audio';
   if (get('player-face').hidden || player.inert || document.hidden) return;
-  const position = appleCapture ? (appleTrack?.edge && appleTrack.playing
-   ? Math.min(appleTrack.durationMs,appleTrack.positionMs+performance.now()-edgeAppleSampledAt)
-   : appleTrack?.positionMs) : !session?.available || !session.durationMs ? undefined :
-   Math.max(0,Math.min(session.durationMs,session.positionMs + (session.playing ? performance.now() - sampledAt : 0)));
-  if (!dragging) seek.value = position ?? 0;
-  const shownPosition = dragging ? Number(seek.value) : position;
-  time.textContent = remaining && Number.isFinite(shownPosition) ?
-   '−' + formatTime(Math.max(0,(appleCapture ? appleTrack?.durationMs : session?.durationMs) - shownPosition)) : formatTime(shownPosition);
+  renderSeek();
   const sampleRate = get('player-sample-rate');
   sampleRate.hidden = !audioContext;
   if (audioContext) sampleRate.textContent = 'INPUT ' + audioContext.sampleRate / 1000 + ' kHz';
@@ -367,7 +487,7 @@
  }
 
  async function pollWhenVisible() {
-  if (!document.hidden && !busy && !appleCapture) await poll();
+  if (!document.hidden && !busy && !appleCapture && !localTrack) await poll();
   nextPoll = window.setTimeout(pollWhenVisible,2200);
  }
 
@@ -377,8 +497,8 @@
    action === 'shuffle' ? Number(!session?.shuffle) : action === 'mute' ? Number(!session?.muted) : 0;
   command(action,value);
  });
- seek.addEventListener('input',() => {dragging = true;});
- seek.addEventListener('change',() => {dragging = false; command('seek',Number(seek.value));});
+ seek.addEventListener('input',() => {dragging = true; renderSeek();});
+ seek.addEventListener('change',() => {dragging = false; void seekTo(Number(seek.value));});
  seek.addEventListener('blur',() => {dragging = false;});
  volume.addEventListener('input',() => {
   adjustingVolume = true;
@@ -390,6 +510,61 @@
   command('volume',value);
  });
  volume.addEventListener('blur',() => {adjustingVolume = false; refreshControls();});
+ const fileInput=get('player-local-file');
+ async function playFile(file){
+  if(!file)return;
+  if(file.error){showFeedback(file.error);return;}
+  showFeedback('Opening '+file.name+'…');
+  try{
+   if(!await openLocalTrack(file))return;
+   const track=localTrack;
+   for(const event of ['play','pause','ended','durationchange','volumechange']){
+    track.audio.addEventListener(event,()=>{if(localTrack===track)renderTransport();});
+   }
+   track.audio.addEventListener('error',()=>{
+    if(localTrack===track)showFeedback('This audio file stopped playing. Reopen it or choose another file.');
+   });
+   update();
+   showFeedback('');
+   message('Playing '+file.name);
+  }catch{
+   showFeedback('Couldn’t play '+file.name+'. Try another file or convert it to MP3 or WAV.');
+  }
+ }
+ function playPickedFile(file){
+  if(file)void playFile({name:file.name,url:URL.createObjectURL(file)});
+ }
+ let filePickerOpen=false;
+ async function chooseFile(){
+  if(!window.resonanceFiles){fileInput.click();return;}
+  if(filePickerOpen)return;
+  filePickerOpen=true;
+  try{void playFile(await window.resonanceFiles.choose());}
+  catch{showFeedback('Couldn’t open the file picker. Try again or drop an audio file onto Resonance.');}
+  finally{filePickerOpen=false;}
+ }
+ get('player-open-file').addEventListener('click',chooseFile);
+ fileInput.addEventListener('change',()=>{
+  playPickedFile(fileInput.files[0]);
+  fileInput.value='';
+ });
+ window.resonanceFiles?.listen(playFile);
+ document.addEventListener('keydown',event=>{
+  if(!(event.ctrlKey||event.metaKey)||event.altKey||event.key.toLowerCase()!=='o'||event.defaultPrevented)return;
+  event.preventDefault();
+  void chooseFile();
+ });
+ if(!window.resonanceFiles?.nativeDrop){
+  document.addEventListener('dragover',event=>{
+   if(event.dataTransfer?.types.includes('Files'))event.preventDefault();
+  });
+  document.addEventListener('drop',event=>{
+   const file=event.dataTransfer?.files[0];
+   if(!file)return;
+   event.preventDefault();
+   playPickedFile(file);
+  });
+ }
  get('player-audio').addEventListener('click',() => get('connect').click());
  get('player-apple-audio').addEventListener('click',() => {
   selectMusicProvider('apple');
@@ -435,12 +610,12 @@
  const defaults = {width:402, meter:37};
  let size = {...defaults};
  let resizeDrag = null;
- function setSize(width,meter,save = false) {
+ function setSize(width,meter,save = false,fit = true) {
   size = {width:Math.round(Math.min(740,Math.max(300,width))),
    meter:Math.round(Math.min(210,Math.max(37,meter)))};
   player.style.setProperty('--player-width',size.width + 'px');
   player.style.setProperty('--player-meter',size.meter + 'px');
-  fitWindow();
+  if (fit) fitWindow();
   if (save) {
    try {localStorage.setItem(sizeStorageKey,JSON.stringify(size));} catch {}
   }
@@ -489,7 +664,6 @@
   grip.hidden = face.hidden;
   event.currentTarget.setAttribute('aria-expanded',String(!face.hidden));
   event.currentTarget.setAttribute('aria-label',face.hidden ? 'Expand player' : 'Collapse player');
-  event.currentTarget.textContent = face.hidden ? '+' : '−';
  });
  function fitWindow() {
   if (!window.resonanceDeck) return;
@@ -499,13 +673,22 @@
   window.resonanceDeck.resize(size.width,height,expanded);
  }
  if (window.resonanceDeck) {
-  for (const [action,label,symbol] of [['minimize','Minimize Resonance','–'],['close','Close Resonance','×']]) {
+  window.resonanceDeck.onNativeResize((width,height,finished)=>{
+   const deckHeight = player.getBoundingClientRect().height;
+   const meterHeight = spectrum.getBoundingClientRect().height;
+   if (!deckHeight) return;
+   const meter = meterHeight ? height - (deckHeight - meterHeight) : size.meter;
+   setSize(width,meter,finished,finished);
+  });
+  for (const [action,label] of [['minimize','Minimize Resonance'],['close','Close Resonance']]) {
    const button = document.createElement('button');
    button.type = 'button';
-   button.className = 'native-window-control';
+   button.className = 'native-window-control deck-title-control';
    button.setAttribute('aria-label',label);
    button.title = label;
-   button.textContent = symbol;
+   const icon = get('player-resize').querySelector('svg').cloneNode(true);
+   icon.querySelector('use').setAttribute('href','#deck-' + action);
+   button.append(icon);
    button.addEventListener('click',window.resonanceDeck[action]);
    grip.parentElement.append(button);
   }
@@ -517,6 +700,7 @@
   }
   fitWindow();
  }
+ document.addEventListener('resonance-source-change',update);
  window.addEventListener('pagehide',event => {if (!event.persisted) clearTimeout(nextPoll);});
  pollWhenVisible();
  window.setInterval(pollEdgeApple,900);
