@@ -2,11 +2,25 @@
 
 <img src="docs/media/resonance-logo.svg" alt="Resonance Harmonic Fold logo" width="72">
 
-Resonance is a local music visualizer with 13 audio-reactive Forms and a skinnable playback deck inspired by Winamp. Use it with Spotify, Apple Music, or a microphone. Preview mode lets you explore every Form without connecting an audio source.
+Resonance is a local music visualizer with 13 audio-reactive Forms and a Winamp-inspired playback deck. Visualize Spotify, Apple Music, or microphone input, or explore every Form in Preview mode. The Windows deck also plays local audio files.
 
-![Resonance studio with its playback deck, spectrum, and Form picker. The preview cycles through Orbital, Waveform, and Fractal.](docs/media/studio.gif)
+![Resonance Studio with the Harmonic Fold logo, the Glass Midnight playback deck, and the Form picker. The preview cycles through Orbital, Waveform, and Fractal.](docs/media/studio.gif)
 
-The animations in this README were captured from Resonance running in Edge with simulated audio inputs.
+Both demos show the current browser build in Preview mode.
+
+## Download Resonance 2.5.0
+
+| Platform | Download |
+| --- | --- |
+| <img src="docs/media/windows.svg" width="16" height="16" alt=""> Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Menu-Fix.exe) |
+| <img src="docs/media/macos.svg" width="16" height="16" alt=""> macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon-Menu-Fix.zip) |
+| <img src="docs/media/macos.svg" width="16" height="16" alt=""> macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel-Menu-Fix.zip) |
+| <img src="docs/media/android.svg" width="16" height="16" alt=""> Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android-Menu-Fix.apk) |
+| <img src="docs/media/iphone.svg" width="16" height="16" alt=""> iPhone | [Xcode project ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-iPhone-Xcode-Menu-Fix.zip) |
+
+On Windows, click **Visualizer** in the deck to open the fullscreen stage with **Settings** visible. On iPhone, build and sign the project in Xcode before installing.
+
+[Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.0) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
 
 ## Run locally
 
@@ -57,18 +71,6 @@ Choose built-in or named custom palettes, save listening presets, or compare the
 | Android and iPhone | Microphone for music playing through nearby speakers | Control playback in the music app. |
 
 For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](edge-apple-bridge) in the same Edge profile as the Resonance and Apple Music tabs. Run Resonance on port **4387** or **4390**, reload both tabs, and leave one Apple Music tab open. Share that tab's audio from Resonance. The bridge reads the title, elapsed time, and duration and lets the deck seek when Apple Music exposes a seekable track. The integration was verified with an Apple Music preview.
-
-## Download Resonance 2.5.0
-
-| Platform | Download |
-| --- | --- |
-| Windows x64 | [Portable EXE with the menu fix](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Menu-Fix.exe). Opens to the frameless deck. Click **Visualizer** for fullscreen with **Settings** open. |
-| macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon-Menu-Fix.zip) |
-| macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel-Menu-Fix.zip) |
-| Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android-Menu-Fix.apk) |
-| iPhone | [Xcode project ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-iPhone-Xcode-Menu-Fix.zip). Build and sign it in Xcode to install it on a device. |
-
-[Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.0) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
 
 ## Develop
 
