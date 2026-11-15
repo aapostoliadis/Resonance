@@ -26,7 +26,11 @@ The macOS builds require macOS 13 or later. The Android APK requires Android 8 o
 
 On Windows, click **Visualizer** in the deck to open the fullscreen stage with **Settings** visible. On iPhone, build and sign the project in Xcode before installing.
 
-[Source ZIP from main](https://github.com/aapostoliadis/resonance/releases/download/v2.5.2/Resonance-Source-main.zip) · [Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.2) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.2/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
+[Source ZIP from main](https://github.com/aapostoliadis/resonance/releases/download/v2.5.2/Resonance-Source-main.zip) · [GitHub-generated ZIP](https://github.com/aapostoliadis/Resonance/archive/refs/tags/v2.5.2.zip) · [GitHub-generated tarball](https://github.com/aapostoliadis/Resonance/archive/refs/tags/v2.5.2.tar.gz)
+
+All three archives contain the same source files from [commit 367a419](https://github.com/aapostoliadis/Resonance/tree/367a4197a418667674efcd68875e3492f5ceeb4d).
+
+[Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.2) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.2/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
 
 ### Verify your download
 
