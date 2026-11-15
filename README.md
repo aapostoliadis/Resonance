@@ -6,7 +6,7 @@ Resonance is a local music visualizer with 13 audio-reactive Forms and a Winamp-
 
 ![The Resonance Windows deck plays a local demo track, opens the Visualizations menu, and shows Orbital and Waveform fullscreen with Settings visible.](docs/media/studio.gif)
 
-The Windows demo uses a local audio file and the Glass Midnight skin. The Listening demo below uses Preview mode in the browser.
+Both demos use the Windows app and a generated local audio track. The playback deck uses the Glass Midnight skin.
 
 ## Download Resonance 2.5.1
 
@@ -45,7 +45,7 @@ Audio is analyzed on your device. Resonance uses the shared audio track and disc
 
 ## Forms and listening mode
 
-![Listening mode cycles through the Hyperspace tunnel, Swarm particles, and Horizon terrain with its compact toolbar visible.](docs/media/listening.gif)
+![Fullscreen Listening in the Windows app cycles through the Hyperspace tunnel, Swarm particles, and Horizon terrain with the Listening toolbar visible.](docs/media/listening.gif)
 
 | Form | Motion |
 | --- | --- |
