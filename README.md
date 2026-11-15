@@ -65,7 +65,9 @@ Audio is analyzed on your device. Resonance uses the shared audio track and disc
 
 ## Forms and listening mode
 
-![Fullscreen Listening in the Windows app cycles through the Hyperspace tunnel, Swarm particles, and Horizon terrain with the Listening toolbar visible.](docs/media/listening.gif)
+**Listening** · Hyperspace, Swarm, and Horizon in fullscreen on the current Windows build.
+
+![Resonance in fullscreen switches from the Hyperspace tunnel to Swarm particles and Horizon terrain, with the Listening toolbar visible.](docs/media/listening.gif)
 
 | Form | Motion |
 | --- | --- |
