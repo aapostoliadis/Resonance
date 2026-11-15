@@ -70,21 +70,22 @@
 .retro-dropdown summary::after { content: " ▾"; font-size: 9px; }
 .retro-dropdown[open] summary { background: #7f90aa32; border-radius: 3px; }
 .retro-popup {
- position: absolute; z-index: 1; bottom: calc(100% + var(--retro-popup-gap)); left: 0;
- display: grid; gap: 2px; width: max-content; min-width: 130px; max-width: calc(100vw - 16px); padding: 5px;
+ position: absolute; z-index: 1; top: calc(100% + var(--retro-popup-gap)); left: var(--retro-popup-offset,0px);
+ display: grid; gap: 2px; width: max-content; min-width: min(130px,calc(100vw - 8px)); max-width: calc(100vw - 8px); padding: 5px;
  max-height: var(--retro-popup-space,100dvh); overflow: hidden auto; overscroll-behavior: contain;
  color: #121e34; background: #e7edf6; border: 1px solid #56647b;
  border-radius: 6px; box-shadow: 0 6px 22px #0008;
 }
-.retro-dropdown[data-opens-down] .retro-popup { top: calc(100% + var(--retro-popup-gap)); bottom: auto; }
-.retro-form-list { grid-template-columns: repeat(2,minmax(0,1fr)); width: 204px; }
+.retro-form-list { grid-template-columns: repeat(2,minmax(max-content,1fr)); }
+@media (max-width: 260px) {
+ .retro-form-list { grid-template-columns: minmax(max-content,1fr); }
+}
 .retro-popup :is(button,a) {
  display: flex; align-items: center; text-align: start; font-size: 12px;
  padding: 7px 5px; background: transparent; border-radius: 3px;
 }
-.retro-popup :is(button,a) { min-width: 0; overflow-wrap: anywhere; color: inherit; }
+.retro-popup :is(button,a) { white-space: nowrap; color: inherit; }
 .retro-popup button:disabled { opacity: .55; cursor: default; }
-.retro-menu > .retro-dropdown:last-child .retro-popup { left: auto; right: 0; }
 .retro-popup button[aria-pressed] { position: relative; padding-inline-end: 21px; }
 .retro-popup button[aria-pressed=true] { background: #c5d4e9; font-weight: 700; }
 .retro-popup button[aria-pressed=true]::after {
@@ -205,12 +206,6 @@ body.listening .retro-player, body.settings-open .retro-player[inert] { display:
  .retro-display { gap: 5px; }
  .retro-transport { gap: 4px; }
  .retro-transport button { width: 29px; height: 29px; font-size: 10px; }
-}
-@media (max-width: 460px) {
- .retro-dropdown { position: static; }
- .retro-menu { position: relative; }
- .retro-popup { left: 8px; bottom: calc(100% + var(--retro-popup-gap)); }
- .retro-menu > .retro-dropdown:last-child .retro-popup { left: 8px; right: auto; }
 }
 /* Glass chassis tokens. Opaque display and popovers keep the text readable over any Form. */
 .retro-player[data-glass] {

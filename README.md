@@ -14,7 +14,7 @@ The v2.5.1 release bundles the five current platform packages and a source ZIP. 
 
 | Platform | Download |
 | --- | --- |
-| <img src="docs/media/windows.svg" width="16" height="16" alt=""> Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/Resonance-Windows-x64-Menu-Fix.exe) |
+| <img src="docs/media/windows.svg" width="16" height="16" alt=""> Windows x64 | [Portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/Resonance-Windows-x64-Dropdown-Fix.exe) |
 | <img src="docs/media/macos.svg" width="16" height="16" alt=""> macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/Resonance-macOS-Apple-Silicon-Menu-Fix.zip) |
 | <img src="docs/media/macos.svg" width="16" height="16" alt=""> macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/Resonance-macOS-Intel-Menu-Fix.zip) |
 | <img src="docs/media/android.svg" width="16" height="16" alt=""> Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/Resonance-Android-Menu-Fix.apk) |
@@ -33,7 +33,7 @@ Save [SHA256SUMS.txt](https://github.com/aapostoliadis/resonance/releases/downlo
 **Windows (PowerShell)**
 
 ```powershell
-(Get-FileHash -Algorithm SHA256 -LiteralPath "Resonance-Windows-x64-Menu-Fix.exe").Hash
+(Get-FileHash -Algorithm SHA256 -LiteralPath "Resonance-Windows-x64-Dropdown-Fix.exe").Hash
 ```
 
 **macOS (Terminal)**

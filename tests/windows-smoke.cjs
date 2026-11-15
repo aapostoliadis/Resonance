@@ -80,7 +80,7 @@ async function devTools(port) {
  return {send,evaluate,click,exceptions,close:() => ws.close()};
 }
 
-async function checkLocal({evaluate,click}) {
+async function checkLocal({evaluate,click,send}) {
  const media = () => evaluate(`({
   title:document.getElementById('player-track').textContent,
   duration:localTrack?.audio.duration, position:localTrack?.audio.currentTime,
@@ -90,23 +90,64 @@ async function checkLocal({evaluate,click}) {
   !document.getElementById('visual').getClientRects().length &&
   !document.body.classList.contains('settings-open') &&
   document.querySelector('.retro-player').getClientRects().length > 0`));
- const menuPlacement = await evaluate(`(async () => {
+ const checkMenus = () => evaluate(`(async () => {
   const menus = [...document.querySelectorAll('.retro-dropdown')];
-  const menuBar = document.querySelector('.retro-menu');
   const result = [];
   for (const menu of menus) {
-   menu.querySelector('summary').click();
+   const trigger = menu.querySelector('summary');
+   trigger.click();
    // Check before the native toggle event gets its own task.
    await Promise.resolve();
-   const popup = menu.querySelector('.retro-popup').getBoundingClientRect();
-   result.push(menu.open && menus.filter(item => item.open).length === 1 &&
-    popup.top >= menuBar.getBoundingClientRect().bottom && popup.bottom <= innerHeight + 1);
+   const anchor = trigger.getBoundingClientRect();
+   const panel = menu.querySelector('.retro-popup');
+   const popup = panel.getBoundingClientRect();
+   const rightEdge = document.documentElement.clientWidth - 4;
+   const alignedLeft = anchor.left + popup.width <= rightEdge ? anchor.left : anchor.right - popup.width;
+   const expectedLeft = Math.max(4,Math.min(alignedLeft,rightEdge - popup.width));
+   const borders = getComputedStyle(panel);
+   const horizontalBar = panel.offsetHeight - panel.clientHeight -
+    parseFloat(borders.borderTopWidth) - parseFloat(borders.borderBottomWidth) > 1;
+   const verticalBar = panel.offsetWidth - panel.clientWidth -
+    parseFloat(borders.borderLeftWidth) - parseFloat(borders.borderRightWidth) > 1;
+   const needsVerticalScroll = panel.scrollHeight > panel.clientHeight;
+   const labelsFit = [...panel.querySelectorAll('button:not([hidden]), a:not([hidden])')].every(item => {
+    const label = document.createRange();
+    label.selectNodeContents(item);
+    const lines = [...label.getClientRects()];
+    return lines.length === 1 && lines[0].right <= popup.left + panel.clientWidth;
+   });
+   result.push({name:trigger.textContent, open:menu.open && menus.filter(item => item.open).length === 1,
+    anchored:popup.top >= anchor.bottom && popup.top <= anchor.bottom + 5 &&
+     Math.abs(popup.left - expectedLeft) < 1 && popup.left < anchor.right && popup.right > anchor.left,
+    fits:popup.left >= 0 && popup.right <= innerWidth + 1 && popup.bottom <= innerHeight + 1,
+    labelsFit, noHorizontalBar:!horizontalBar && panel.scrollWidth === panel.clientWidth,
+    noUnneededVerticalBar:!verticalBar || needsVerticalScroll, needsVerticalScroll});
   }
   menus.at(-1).querySelector('summary').click();
   return result;
  })()`);
- assert.deepEqual(menuPlacement, Array(7).fill(true), 'every menu opens below the compact deck menu bar before the first paint');
- console.log('PASS all seven dropdowns positioned before the first paint');
+ const checkMenuResults = async (size, expectOverflow) => {
+  const menus = await checkMenus();
+  for (const {name,needsVerticalScroll,...checks} of menus) {
+   assert.deepEqual(checks,{open:true,anchored:true,fits:true,labelsFit:true,
+    noHorizontalBar:true,noUnneededVerticalBar:true},`${name} menu at ${size}`);
+  }
+  if (expectOverflow !== undefined) {
+   assert.equal(menus.some(menu => menu.needsVerticalScroll),expectOverflow,
+    `vertical scrolling at ${size}`);
+  }
+ };
+ await checkMenuResults('default size');
+ try {
+  for (const [width,height,expectOverflow] of [[320,238,true],[575,340,false]]) {
+   await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
+   await until('resized deck',() => evaluate(`innerWidth === ${width} && innerHeight === ${height}`));
+   await checkMenuResults(`${width} × ${height}px`,expectOverflow);
+  }
+ } finally {
+  await send('Emulation.clearDeviceMetricsOverride');
+ }
+ console.log('PASS all seven dropdowns are anchored with single-line labels and scroll only when needed');
  const missing = await evaluate(`Promise.all([...document.querySelectorAll('script[src],link[rel="stylesheet"]')]
   .map(node => node.src || node.href).filter(url => new URL(url).origin === location.origin)
   .map(async url => (await fetch(url)).ok ? null : url)).then(results => results.filter(Boolean))`);

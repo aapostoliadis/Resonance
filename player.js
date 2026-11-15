@@ -111,16 +111,19 @@
   if (restoreFocus) menu.querySelector('summary').focus();
  }
  function placeMenu(menu) {
-  const anchor = matchMedia('(max-width: 460px)').matches ? menu.parentElement : menu;
-  const bounds = anchor.getBoundingClientRect();
+  const bounds = menu.getBoundingClientRect();
   const popup = menu.querySelector('.retro-popup');
   const gap = parseFloat(getComputedStyle(popup).getPropertyValue('--retro-popup-gap'));
-  const above = Math.max(0,bounds.top - gap);
-  const below = Math.max(0,innerHeight - bounds.bottom - gap);
-  const contentHeight = popup.scrollHeight + popup.offsetHeight - popup.clientHeight;
-  const downward = contentHeight > above && below > above;
-  menu.toggleAttribute('data-opens-down',downward);
-  menu.style.setProperty('--retro-popup-space',(downward ? below : above) + 'px');
+  const edge = 4;
+  const rightEdge = document.documentElement.clientWidth - edge;
+  const availableHeight = Math.max(0,innerHeight - bounds.bottom - gap - edge);
+  menu.style.setProperty('--retro-popup-space',availableHeight + 'px');
+
+  const width = popup.getBoundingClientRect().width;
+  // Align to the trigger's start, or its end when the menu would run off screen.
+  const alignedLeft = bounds.left + width <= rightEdge ? bounds.left : bounds.right - width;
+  const left = Math.max(edge,Math.min(alignedLeft,rightEdge - width));
+  menu.style.setProperty('--retro-popup-offset',(left - bounds.left) + 'px');
  }
 
  function applySkin(id, save = false) {
