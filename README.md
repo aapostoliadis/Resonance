@@ -4,7 +4,9 @@
 
 Resonance is a local music visualizer with 13 audio-reactive Forms and a Winamp-inspired playback deck. Visualize Spotify, Apple Music, or microphone input, or explore every Form in Preview mode. The Windows deck also plays local audio files.
 
-![The Resonance Windows deck plays a local demo track, opens the Visualizations menu, and shows Orbital and Waveform fullscreen with Settings visible.](docs/media/studio.gif)
+**Studio** · Open Skins and Visualizations on the Windows deck at its 300 px minimum width.
+
+![The compact Resonance deck opens the Skins and Visualizations menus below their buttons. Both menus keep labels on one line.](docs/media/studio.gif)
 
 Both demos use the Windows app and a generated local audio track. The playback deck uses the Glass Midnight skin.
 
