@@ -150,8 +150,12 @@
  try { savedSkin = localStorage.getItem(skinStorageKey); } catch {}
  applySkin(skins.some(skin => skin.id === savedSkin) ? savedSkin : 'silver');
 
+ // Position newly opened menus before paint. The native toggle event runs in a later task.
+ const menuOpenChanges = new MutationObserver(changes => {
+  for (const {target: menu} of changes) if (menu.open) placeMenu(menu);
+ });
  for (const menu of menus) {
-  menu.addEventListener('toggle',() => {if (menu.open) placeMenu(menu);});
+  menuOpenChanges.observe(menu,{attributes:true,attributeFilter:['open']});
   menu.querySelector('summary').addEventListener('click',() => {
    for (const other of menus) if (other !== menu) closeMenu(other);
   });

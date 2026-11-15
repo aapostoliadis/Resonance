@@ -62,7 +62,7 @@ For Apple Music in Edge, load the unpacked extension from [edge-apple-bridge](ed
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 | [Harmonic Fold portable EXE](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Harmonic-Fold.exe). Opens to the frameless deck. Click **Visualizer** for fullscreen with **Settings** open. |
+| Windows x64 | [Portable EXE with the menu fix](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Windows-x64-Menu-Fix.exe). Opens to the frameless deck. Click **Visualizer** for fullscreen with **Settings** open. |
 | macOS, Apple Silicon | [Apple Silicon ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Apple-Silicon-Harmonic-Fold.zip) |
 | macOS, Intel | [Intel ZIP](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-macOS-Intel-Harmonic-Fold.zip) |
 | Android | [Signed APK](https://github.com/aapostoliadis/resonance/releases/download/v2.5.0/Resonance-Android-Harmonic-Fold.apk) |

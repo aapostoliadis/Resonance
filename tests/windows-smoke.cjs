@@ -90,6 +90,23 @@ async function checkLocal({evaluate,click}) {
   !document.getElementById('visual').getClientRects().length &&
   !document.body.classList.contains('settings-open') &&
   document.querySelector('.retro-player').getClientRects().length > 0`));
+ const menuPlacement = await evaluate(`(async () => {
+  const menus = [...document.querySelectorAll('.retro-dropdown')];
+  const menuBar = document.querySelector('.retro-menu');
+  const result = [];
+  for (const menu of menus) {
+   menu.querySelector('summary').click();
+   // Check before the native toggle event gets its own task.
+   await Promise.resolve();
+   const popup = menu.querySelector('.retro-popup').getBoundingClientRect();
+   result.push(menu.open && menus.filter(item => item.open).length === 1 &&
+    popup.top >= menuBar.getBoundingClientRect().bottom && popup.bottom <= innerHeight + 1);
+  }
+  menus.at(-1).querySelector('summary').click();
+  return result;
+ })()`);
+ assert.deepEqual(menuPlacement, Array(7).fill(true), 'every menu opens below the compact deck menu bar before the first paint');
+ console.log('PASS all seven dropdowns positioned before the first paint');
  const missing = await evaluate(`Promise.all([...document.querySelectorAll('script[src],link[rel="stylesheet"]')]
   .map(node => node.src || node.href).filter(url => new URL(url).origin === location.origin)
   .map(async url => (await fetch(url)).ok ? null : url)).then(results => results.filter(Boolean))`);
