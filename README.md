@@ -26,6 +26,24 @@ On Windows, click **Visualizer** in the deck to open the fullscreen stage with *
 
 [Source ZIP from main](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/Resonance-Source-main.zip) · [Release notes](https://github.com/aapostoliadis/resonance/releases/tag/v2.5.1) · [SHA-256 checksums](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/SHA256SUMS.txt) · [Installation and verification notes](docs/INSTALL.md)
 
+### Verify your download
+
+Save [SHA256SUMS.txt](https://github.com/aapostoliadis/resonance/releases/download/v2.5.1/SHA256SUMS.txt) alongside the file you downloaded. Open PowerShell or Terminal in that folder and replace the example filename with your download's exact name.
+
+**Windows (PowerShell)**
+
+```powershell
+(Get-FileHash -Algorithm SHA256 -LiteralPath "Resonance-Windows-x64-Menu-Fix.exe").Hash
+```
+
+**macOS (Terminal)**
+
+```sh
+shasum -a 256 "Resonance-macOS-Apple-Silicon-Menu-Fix.zip"
+```
+
+Compare the 64-character hash with the entry for that filename in `SHA256SUMS.txt`. Uppercase and lowercase letters are equivalent. If the hash differs, download the file again before opening it.
+
 ## Run locally
 
 Install Node.js, clone this repository, and run the included local server. The compiled graphics are included.
